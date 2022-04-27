@@ -367,7 +367,8 @@ def format_columns(uncovered,coverage,contracts):
                              'BILLTO_CUSTOMER_NAME':'Product Bill To',
                              'PF_BAND':'Product Band'}
     
-    uncovered[['SERVICE_CONTRACT_NUMBER','LDOS_AGE','LDOS_FISCAL_YEAR','INSTALLATION_QUANTITY']] = uncovered[['SERVICE_CONTRACT_NUMBER','LDOS_AGE','LDOS_FISCAL_YEAR','INSTALLATION_QUANTITY']].fillna(0).astype("int64")
+    uncovered[['SERVICE_CONTRACT_NUMBER','LDOS_AGE','LDOS_FISCAL_YEAR']] = uncovered[['SERVICE_CONTRACT_NUMBER','LDOS_AGE','LDOS_FISCAL_YEAR']].fillna(0).astype("int64")
+    uncovered['INSTALLATION_QUANTITY'] = uncovered['INSTALLATION_QUANTITY'].astype(float)
     uncovered['INSTANCE_NUMBER'] = uncovered['INSTANCE_NUMBER'].astype(float)
     uncovered["UPDATED_DATE"] = pd.to_datetime(uncovered["UPDATED_DATE"])
     uncovered["EQUIPMENT_TYPE"] = uncovered["EQUIPMENT_TYPE"].astype(float)
@@ -436,9 +437,10 @@ def Total_Recommended_Estimate_CR(uncovered_data_filtered):
         Recommended_Estimate='N/A'
     else:
         uncovered_data_filtered_Y = uncovered_data_filtered[(uncovered_data_filtered["SSPT_YORN"]=="Y")&(uncovered_data_filtered["SNTC_YORN"]=="Y")]
-        uncovered_data_filtered_Y = uncovered_data_filtered_Y[['ECMU','INSTALLATION_QUANTITY','SNT']].fillna(0)
-        uncovered_data_filtered_Y['PRICING_LIST'] = ((uncovered_data_filtered_Y['ECMU'] * uncovered_data_filtered_Y['INSTALLATION_QUANTITY'])) + uncovered_data_filtered_Y['SNT']
-    
+        uncovered_data_filtered_Y = uncovered_data_filtered_Y[['ECMU','INSTALLATION_QUANTITY','SNT','DV_GOODS_PRODUCT_CATEGORY_CD']].fillna(0)
+        uncovered_data_filtered_Y['PRICING_LIST'] = ((uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'HARDWARE')*uncovered_data_filtered_Y['SNT'] + (uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'SOFTWARE')*uncovered_data_filtered_Y['ECMU'])*uncovered_data_filtered_Y['INSTALLATION_QUANTITY']
+        #uncovered_data_filtered_Y['PRICING_LIST'] = ((uncovered_data_filtered_Y['ECMU'] * uncovered_data_filtered_Y['INSTALLATION_QUANTITY'])) + uncovered_data_filtered_Y['SNT']
+        
         Recommended_Estimate=round(uncovered_data_filtered_Y["PRICING_LIST"].sum()/1000,1)
     
     return Recommended_Estimate
