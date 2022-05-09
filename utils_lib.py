@@ -17,60 +17,80 @@ from tableauhyperapi import HyperProcess, Telemetry, \
 
 warnings.filterwarnings("ignore")
 
+
 def clean_region(region):
-    region = region.replace('_','')
+    region = region.replace('_', '')
     region = region.split('-')
-    
+
     return region[0]
 
-def get_da_requests(da,df):
+
+def get_da_requests(da, df):
     oa_df = df.query("`Assigned DA` == r'{}' and Status == 'Validated' and `OP Status` == 'In Process'".format(da),
-                                                           engine='python')
-    
+                     engine='python')
+
     fields_df = oa_df.copy()
-    fields_df["SAV ID"] = fields_df["SAV ID"].apply(lambda x : str(x).replace(" ",'').split('.')[0])
-    fields_df["GU ID"] = fields_df["GU ID"].apply(lambda x :  str(x).replace(" ",'').split('.')[0])
-    fields_df["CAV ID"] = fields_df["CAV ID"].apply(lambda x : str(x).replace(" ",'').split('.')[0])
-    fields_df["CR Party ID"] = fields_df["CR Party ID"].apply(lambda x :  str(x).replace(" ",'').split('.')[0])
-    fields_df["Contract ID"] = fields_df["Contract ID"].apply(lambda x :  str(x).replace(" ",'').split('.')[0])
-    fields_df["sav_list"] = fields_df["SAV ID"].apply(lambda x : x.split(','))
-    fields_df["gu_list"] = fields_df["GU ID"].apply(lambda x : x.split(','))
-    fields_df["cav_list"] = fields_df["CAV ID"].apply(lambda x : x.split(','))
-    fields_df["cr_list"] = fields_df["CR Party ID"].apply(lambda x : x.split(','))
-    fields_df["contract_list"] = fields_df["Contract ID"].apply(lambda x : x.split(','))
-    fields_df["Lvl1"] = fields_df["Lvl1"].apply(lambda x : clean_region(x))
+    fields_df["SAV ID"] = fields_df["SAV ID"].apply(
+        lambda x: str(x).replace(" ", '').split('.')[0])
+    fields_df["GU ID"] = fields_df["GU ID"].apply(
+        lambda x:  str(x).replace(" ", '').split('.')[0])
+    fields_df["CAV ID"] = fields_df["CAV ID"].apply(
+        lambda x: str(x).replace(" ", '').split('.')[0])
+    fields_df["CR Party ID"] = fields_df["CR Party ID"].apply(
+        lambda x:  str(x).replace(" ", '').split('.')[0])
+    fields_df["Contract ID"] = fields_df["Contract ID"].apply(
+        lambda x:  str(x).replace(" ", '').split('.')[0])
+    fields_df["sav_list"] = fields_df["SAV ID"].apply(lambda x: x.split(','))
+    fields_df["gu_list"] = fields_df["GU ID"].apply(lambda x: x.split(','))
+    fields_df["cav_list"] = fields_df["CAV ID"].apply(lambda x: x.split(','))
+    fields_df["cr_list"] = fields_df["CR Party ID"].apply(
+        lambda x: x.split(','))
+    fields_df["contract_list"] = fields_df["Contract ID"].apply(
+        lambda x: x.split(','))
+    fields_df["Lvl1"] = fields_df["Lvl1"].apply(lambda x: clean_region(x))
     fields_df["Date Created"] = pd.to_datetime(fields_df["Date Created"])
     fields_df.reset_index(inplace=True)
-    
+
     return fields_df
+
 
 def import_ib_files(df):
     renewals_s = pd.DataFrame()
     coverage_s = pd.DataFrame()
     dna_s = pd.DataFrame()
     subs_s = pd.DataFrame()
-    
+
     renewals_g = pd.DataFrame()
     coverage_g = pd.DataFrame()
     dna_g = pd.DataFrame()
     subs_g = pd.DataFrame()
-    
+
     if 'SAV ID' in df["ID TYPE"].unique():
-        renewals_s = pd.read_csv(r"..\CRBO\SAV_ID\SAV_-_OP_-_Renewals_Oppty___41594543.csv", dtype={'SAV ID':str,'Instance Shipped Fiscal Year':str})
-        coverage_s = pd.read_csv(r"..\CRBO\SAV_ID\SAV_-_OP_IB_Total_Asset_View_-_Coverage___41594531.csv", dtype={'SAV ID':str})
-        dna_s = pd.read_csv(r"..\CRBO\SAV_ID\SAV_-_OP_IB_Total_Asset_View_-_DNA_Appliance___41594557.csv", dtype={'SAV ID':str,'Instance Shipped Fiscal Year':str})
-        subs_s = pd.read_csv(r"..\CRBO\SAV_ID\SAV_SaaS_-_Offers_Package___41594580.csv", dtype={'SAV ID':str})
+        renewals_s = pd.read_csv(r"..\CRBO\SAV_ID\SAV_-_OP_-_Renewals_Oppty___41594543.csv",
+                                 dtype={'SAV ID': str, 'Instance Shipped Fiscal Year': str})
+        coverage_s = pd.read_csv(
+            r"..\CRBO\SAV_ID\SAV_-_OP_IB_Total_Asset_View_-_Coverage___41594531.csv", dtype={'SAV ID': str})
+        dna_s = pd.read_csv(r"..\CRBO\SAV_ID\SAV_-_OP_IB_Total_Asset_View_-_DNA_Appliance___41594557.csv",
+                            dtype={'SAV ID': str, 'Instance Shipped Fiscal Year': str})
+        subs_s = pd.read_csv(
+            r"..\CRBO\SAV_ID\SAV_SaaS_-_Offers_Package___41594580.csv", dtype={'SAV ID': str})
         print('SAV files loaded!')
-    
+
     if 'GU ID' in df["ID TYPE"].unique():
-        renewals_g = pd.read_csv(r".\CRBO\GU_ID\GU_-_OP_-_Renewals_Oppty___41634341.csv", dtype={'Best Site GU Party ID':str,'Instance Shipped Fiscal Year':str})
-        coverage_g = pd.read_csv(r".\CRBO\GU_ID\GU_-_OP_IB_Total_Asset_View_-_Coverage___41634333.csv", dtype={'Best Site GU Party ID':str})
-        dna_g = pd.read_csv(r".\CRBO\GU_ID\GU_-_OP_IB_Total_Asset_View_-_DNA_Appliance___41634312.csv", dtype={'Best Site GU Party ID':str,'Instance Shipped Fiscal Year':str})
-        subs_g = pd.read_csv(r".\CRBO\GU_ID\GU_-_OP_SW_Subscription___41634352.csv", dtype={'GU Party ID':str})
+        renewals_g = pd.read_csv(r".\CRBO\GU_ID\GU_-_OP_-_Renewals_Oppty___41634341.csv", dtype={
+                                 'Best Site GU Party ID': str, 'Instance Shipped Fiscal Year': str})
+        coverage_g = pd.read_csv(
+            r".\CRBO\GU_ID\GU_-_OP_IB_Total_Asset_View_-_Coverage___41634333.csv", dtype={'Best Site GU Party ID': str})
+        dna_g = pd.read_csv(r".\CRBO\GU_ID\GU_-_OP_IB_Total_Asset_View_-_DNA_Appliance___41634312.csv",
+                            dtype={'Best Site GU Party ID': str, 'Instance Shipped Fiscal Year': str})
+        subs_g = pd.read_csv(
+            r".\CRBO\GU_ID\GU_-_OP_SW_Subscription___41634352.csv", dtype={'GU Party ID': str})
         print('GU files loaded!')
-        
+
+
 def print_ids_list(fields_df):
-    sav_l = fields_df.query("`ID TYPE` == 'SAV ID'")["sav_list"].tolist() ### Inverted quotation marks to columns with spaces
+    # Inverted quotation marks to columns with spaces
+    sav_l = fields_df.query("`ID TYPE` == 'SAV ID'")["sav_list"].tolist()
     flat_sav = list(itertools.chain(*sav_l))
     print('SAVs = ' + ';'.join(flat_sav))
 
@@ -82,7 +102,8 @@ def print_ids_list(fields_df):
     flat_cr = list(itertools.chain(*cr_l))
     print('CRs = ' + ','.join(flat_cr))
 
-def get_ids_list(fields_df,separator=';'):
+
+def get_ids_list(fields_df, separator=';'):
     sav_l = fields_df.query("`ID TYPE` == 'SAV ID'")["sav_list"].tolist()
     flat_sav = list(itertools.chain(*sav_l))
     sav_str_list = separator.join(flat_sav)
@@ -90,7 +111,7 @@ def get_ids_list(fields_df,separator=';'):
     gu_l = fields_df.query("`ID TYPE` == 'GU ID'")["gu_list"].tolist()
     flat_gu = list(itertools.chain(*gu_l))
     gu_str_list = separator.join(flat_gu)
-    
+
     cav_l = fields_df.query("`ID TYPE` == 'CAV ID'")["cav_list"].tolist()
     flat_cav = list(itertools.chain(*cav_l))
     cav_str_list = separator.join(flat_cav)
@@ -98,58 +119,62 @@ def get_ids_list(fields_df,separator=';'):
     cr_l = fields_df.query("`ID TYPE` == 'CR Party ID'")["cr_list"].tolist()
     flat_cr = list(itertools.chain(*cr_l))
     cr_str_list = separator.join(flat_cr)
-    
+
     #cr_l = fields_df.query("`CR Party ID` != ''")["cr_list"].tolist()
     #flat_cr = list(itertools.chain(*cr_l))
     #cr_str_list = separator.join(flat_cr)
-    
-    contracts_l = fields_df.query("`Contract ID` != ''")["contract_list"].tolist()
+
+    contracts_l = fields_df.query("`Contract ID` != ''")[
+        "contract_list"].tolist()
     flat_cr = list(itertools.chain(*cr_l))
     cr_str_list = separator.join(flat_cr)
-        
-    return sav_str_list,gu_str_list,cav_str_list,cr_str_list
+
+    return sav_str_list, gu_str_list, cav_str_list, cr_str_list
+
 
 def fill_nas(df):
     types = df.dtypes.to_dict()
 
     for t in types:
         if types[t] == "int64":
-            df[t]=df[t].fillna(0)
+            df[t] = df[t].fillna(0)
         elif types[t] == "float64":
-            df[t]=df[t].fillna(0.0)
+            df[t] = df[t].fillna(0.0)
         else:
-            df[t]=df[t].where(df[t].notnull(), None)
+            df[t] = df[t].where(df[t].notnull(), None)
     return df
 
+
 def get_url(name):
-    name = name.replace(' ','')
-    url = r'https://cx-tableau-stage.cisco.com/#/site/Compass/views/{}/EstimatorRecommendationsSummary?iframeSizedToWindow=true&%3Aembed=y&%3AshowAppBanner=false&%3Adisplay_count=no&%3AshowVizHome=no&%3Atabs=no&%3Aorigin=viz_share_link&%3Atoolbar=yes'.format(name)
+    name = name.replace(' ', '')
+    url = r'https://cx-tableau-stage.cisco.com/#/site/Compass/views/{}/EstimatorRecommendationsSummary?iframeSizedToWindow=true&%3Aembed=y&%3AshowAppBanner=false&%3Adisplay_count=no&%3AshowVizHome=no&%3Atabs=no&%3Aorigin=viz_share_link&%3Atoolbar=yes'.format(
+        name)
     return url
 
 # --------------------------------------------------- Extracts
 
-def create_extract(name,columns,df,path):
+
+def create_extract(name, columns, df, path):
     process_parameters = {
-            # Limits the number of Hyper event log files to two.
-            "log_file_max_count": "2",
-            # Limits the size of Hyper event log files to 100 megabytes.
-            "log_file_size_limit": "100M"
-        }
+        # Limits the number of Hyper event log files to two.
+        "log_file_max_count": "2",
+        # Limits the size of Hyper event log files to 100 megabytes.
+        "log_file_size_limit": "100M"
+    }
 
     with HyperProcess(telemetry=Telemetry.SEND_USAGE_DATA_TO_TABLEAU, parameters=process_parameters) as hyper:
-             # Optional connection parameters.
-            # They are documented in the Tableau Hyper documentation, chapter "Connection Settings"
-            # (https://help.tableau.com/current/api/hyper_api/en-us/reference/sql/connectionsettings.html).
+        # Optional connection parameters.
+        # They are documented in the Tableau Hyper documentation, chapter "Connection Settings"
+        # (https://help.tableau.com/current/api/hyper_api/en-us/reference/sql/connectionsettings.html).
         connection_parameters = {"lc_time": "en_US"}
 
-            # Creates new Hyper file "customer.hyper".
-            # Replaces file with CreateMode.CREATE_AND_REPLACE if it already exists.
+        # Creates new Hyper file "customer.hyper".
+        # Replaces file with CreateMode.CREATE_AND_REPLACE if it already exists.
         with Connection(hyper.endpoint,
                         f'{path}/Extracts/{name}.hyper',
                         create_mode=CreateMode.CREATE_AND_REPLACE) as connection:
 
             connection.catalog.create_schema('Extract')
-
 
             table = TableDefinition(
                 # Since the table name is not prefixed with an explicit schema name, the table will reside in the default "public" namespace.
@@ -163,37 +188,37 @@ def create_extract(name,columns,df,path):
                 for index, row in df.iterrows():
                     inserter.add_row(row)
                 inserter.execute()
-                
-                
+
     hyper.shutdown()
 
-def get_telemetry_df2(user,savs,gus,parties,cavs):
-    
+
+def get_telemetry_df2(user, savs, gus, parties, cavs):
     """Get telemetry data from Snowflake by given Party ids and
     creates a DataFrame
-    
+
     param: user - cisco e-mail address
     param: party_ids - list of given party ids"""
-          
+
     cnn = snowflake.connector.connect(
-    user=user,
-    authenticator='externalbrowser',
-    role='CX_CA_BUS_ANALYST_ROLE',
-    warehouse='CX_CA_RPT_WH',
-    database='CX_DB',
-    schema='CX_CA_BR',
-    account='cisco.us-east-1'
+        user=user,
+        authenticator='externalbrowser',
+        role='CX_CA_BUS_ANALYST_ROLE',
+        warehouse='CX_CA_RPT_WH',
+        database='CX_DB',
+        schema='CX_CA_BR',
+        account='cisco.us-east-1'
     )
     cs = cnn.cursor()
-    
+
     dfs = []
-    types_list = {'SAV':savs,'GU':gus,'CR':parties,'CAV':cavs}
-    
+    types_list = {'SAV': savs, 'GU': gus, 'CR': parties, 'CAV': cavs}
+
     for type_id in types_list.keys():
-        
+
         ids = types_list.get(type_id)
 
-        if ids == '': pass
+        if ids == '':
+            pass
         else:
 
             query_telemetry = f"""select distinct
@@ -298,53 +323,1023 @@ and BK_BUSINESS_ENTITY_TYPE_CD = 'I'
             cs.execute(query_telemetry)
             df = cs.fetchall()
 
-            cir_columns = ['Party ID','Customer', 'Equipment Type Description', 'Appliance ID',
+            cir_columns = ['Party ID', 'Customer', 'Equipment Type Description', 'Appliance ID',
                            'Inventory', 'Collection Date', 'Imported By', 'Product ID',
                            'Product Family', 'Business Entity', 'Sub Business Entity',
                            'Business Entity Description', 'PF', 'Product Description',
                            'Equipment Type', 'Product Type', 'Serial Number',
                            'Last Date of Support', 'Alert URL', 'Contract Number',
                            'Contract Status', 'Contract Lines Status', 'Service Program',
-                           'Contract End Date', 'Contract Line End Date','ACCOUNT_ID','ID','Updated Date']
+                           'Contract End Date', 'Contract Line End Date', 'ACCOUNT_ID', 'ID', 'Updated Date']
 
-            df = pd.DataFrame(df,columns=cir_columns)
-            
+            df = pd.DataFrame(df, columns=cir_columns)
+
             dfs.append(df)
 
     cir_df = pd.concat(dfs)
-    
+
     #types = uncovered_df.dtypes.to_dict()
     cir_df.insert(loc=1, column='ACTIVE_YORN', value='Y')
     #cir_df = cir_df.query("ACTIVE_YORN == 'Y'")
-    cir_df['Party ID'] = cir_df['Party ID'].apply(lambda x: int(0 if x is None else x))
-    cir_df[['Contract End Date',"Updated Date", 'Contract Line End Date','Last Date of Support']] = cir_df[['Contract End Date',"Updated Date", 'Contract Line End Date','Last Date of Support']].replace({pd.NaT: None})
-    cir_df['Equipment Type'] = cir_df['Equipment Type'].apply(lambda x: float(0.0 if x is None else str(x).split('.')[0]))
-    
+    cir_df['Party ID'] = cir_df['Party ID'].apply(
+        lambda x: int(0 if x is None else x))
+    cir_df[['Contract End Date', "Updated Date", 'Contract Line End Date', 'Last Date of Support']] = cir_df[[
+        'Contract End Date', "Updated Date", 'Contract Line End Date', 'Last Date of Support']].replace({pd.NaT: None})
+    cir_df['Equipment Type'] = cir_df['Equipment Type'].apply(
+        lambda x: float(0.0 if x is None else str(x).split('.')[0]))
+
     return cir_df
 
-def get_tac_df_new(user,ids,id_type): 
-    
+
+def get_dna_df(user, savs, gus, parties, cavs):
+    """Get telemetry data from Snowflake by given Party ids and
+    creates a DataFrame
+
+    param: user - cisco e-mail address
+    param: party_ids - list of given party ids"""
+
+    cnn = snowflake.connector.connect(
+        user=user,
+        authenticator='externalbrowser',
+        role='CX_CA_BUS_ANALYST_ROLE',
+        warehouse='CX_CA_RPT_WH',
+        database='CX_DB',
+        schema='CX_CA_BR',
+        account='cisco.us-east-1'
+    )
+    cs = cnn.cursor()
+
+    dfs = []
+    types_list = {'SAV': savs, 'GU': gus, 'CR': parties, 'CAV': cavs}
+
+    for type_id in types_list.keys():
+
+        ids = types_list.get(type_id)
+        id_identifyer = type_id
+
+        print(ids)
+        if ids == '':
+            print("EmptyIDs")
+
+        elif id_identifyer == 'SAV':
+            print("Entered as SAV")
+            query_lifecycle = f""" WITH CX AS (
+                    SELECT
+                        CX_CUSTOMER_BU_ID,
+                        CX_CUSTOMER_BU_KEY,
+                        CX_CUSTOMER_BU_NAME,
+                        CX_CUSTOMER_ID,
+                        CX_CUSTOMER_KEY,
+                        CX_CUSTOMER_NAME,
+                        SALES.BK_SALES_ACCOUNT_ID_INT,
+                        SALES_ACCOUNT_GROUP_NAME
+                    FROM
+                        CX_DB.CX_CA_EBV.BV_CXCUST_BU_PARTY_MAPPING CUST
+                        INNER JOIN CX_DB.CX_CA_EBV."BV_CUSTOMER_PARTY_HIERARCHY" cust1 ON CUST1.BRANCH_PARTY_SSOT_PARTY_ID_INT = CUST.CR_PARTY_ID
+                        INNER JOIN CX_DB.CX_CA_BR.BV_SA_GRPCSTPTY_LNKSYSVW_TV SAVG ON CUST1.branch_customer_party_key = SAVG.CUSTOMER_PARTY_KEY
+                        INNER JOIN CX_DB.CX_CA_BR.BV_SLS_ACCT_GROUP_SAV_PARTY SALES ON SALES.SALES_ACCOUNT_GROUP_PARTY_KEY = SAVG.SALES_ACCOUNT_GROUP_PARTY_KEY
+                    WHERE
+                        SAVG.END_TV_DT = '3500-01-01'
+                        AND SAVG.SOURCE_DELETED_FLG = 'N'
+                        AND SALES.SALES_ACCOUNT_GROUP_TYPE_CD IN ('NAMED_ACCOUNT', 'GEO_ACCOUNT')
+                        AND BK_SALES_ACCOUNT_ID_INT in ({ids})
+                    GROUP BY
+                        CX_CUSTOMER_BU_ID,
+                        CX_CUSTOMER_BU_KEY,
+                        CX_CUSTOMER_BU_NAME,
+                        CX_CUSTOMER_ID,
+                        CX_CUSTOMER_KEY,
+                        CX_CUSTOMER_NAME,
+                        SALES.BK_SALES_ACCOUNT_ID_INT,
+                        SALES_ACCOUNT_GROUP_NAME
+                    ),
+                    CSH AS (
+                    SELECT
+                        DISTINCT LEVEL3_COMP_KEY AS USE_CASE_KEY,
+                        LEVEL3_COMP_ID AS CX_USECASE_ID,
+                        LEVEL3_UC_NAME AS CX_USECASE_NAME,
+                        BK_PRODUCT_ID --K2_PRODUCT_CATEGORY_NM AS PRODUCT
+                    FROM
+                        CX_DB.CX_CA_EBV.BV_CX_SOLUTION_HIERARCHY CX_SOL
+                    GROUP BY
+                        1,
+                        2,
+                        3,
+                        4
+                    ),
+                    CTE AS (
+                    SELECT
+                        CX.CX_CUSTOMER_ID,
+                        CX.CX_CUSTOMER_NAME,
+                        CX.CX_CUSTOMER_BU_ID,
+                        CX_CUSTOMER_KEY,
+                        BK_CX_LIFECYCLE_STAGE_HIER_ID,
+                        LC_STG.CX_LIFECYCLE_STAGE_HIER_KEY,
+                        CX_USECASE_NAME,
+                        LC_STG.BK_CX_LIFECYCLE_STAGE_NAME,
+                        HIER.CX_SOLUTION_HIER_USE_CASE_KEY,
+                        LC_STG.CURRENT_STAGE_FLG,
+                        CUSTOMER_ELIGIBLE_FLG,
+                        CX.BK_SALES_ACCOUNT_ID_INT,
+                        CX.SALES_ACCOUNT_GROUP_NAME
+                    FROM
+                        CX_DB.CX_CA_EBV.BV_CX_CUST_BU_LC_STG_CMPLTN LC_STG
+                        INNER JOIN (
+                        SELECT
+                            CX_LIFECYCLE_STAGE_HIER_KEY,
+                            CX_SOLUTION_HIER_USE_CASE_KEY,
+                            BK_CX_LIFECYCLE_STAGE_HIER_ID
+                        FROM
+                            CX_DB.CX_CA_EBV.BV_CX_LIFECYCLE_STAGE_HIERARCHY
+                        WHERE
+                            END_TV_DTM = '3500-01-01'
+                            AND EDWSF_SOURCE_DELETED_FLAG = 'N'
+                        GROUP BY
+                            1,
+                            2,
+                            3
+                        ) HIER ON LC_STG.CX_LIFECYCLE_STAGE_HIER_KEY = HIER.CX_LIFECYCLE_STAGE_HIER_KEY
+                        INNER JOIN CSH ON CSH.USE_CASE_KEY = HIER.CX_SOLUTION_HIER_USE_CASE_KEY
+                        INNER JOIN CX ON LC_STG.CX_CUSTOMER_BU_KEY = CX.CX_CUSTOMER_BU_KEY
+                    WHERE
+                        LC_STG.CUSTOMER_ELIGIBLE_FLG <> 'N'
+                    GROUP BY
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6,
+                        7,
+                        8,
+                        9,
+                        10,
+                        11,
+                        12,
+                        13
+                    ),
+                    SAV AS (
+                    SELECT
+                        BK_SALES_ACCOUNT_ID_INT CUSTOMER_ID,
+                        SALES_ACCOUNT_GROUP_NAME CUSTOMER_NAME,
+                        CTE.CX_USECASE_NAME,
+                        MAX_LIFECYCLE_STAGE_NAME,
+                        'SAV' AS ACCOUNT_INDENTIFIER -- , MIN(BOOKINGS_PROCESS_DATE) ACTUAL_PURCHASE_DATE
+                    FROM
+                        CTE CTE
+                        LEFT JOIN (
+                        SELECT
+                            CX_CUSTOMER_KEY,
+                            BK_CX_LIFECYCLE_STAGE_NAME AS MAX_LIFECYCLE_STAGE_NAME,
+                            CX_USECASE_NAME
+                        FROM
+                            (
+                            SELECT
+                                CX_CUSTOMER_KEY,
+                                BK_CX_LIFECYCLE_STAGE_NAME,
+                                CX_USECASE_NAME,
+                                ROW_NUMBER() OVER (
+                                PARTITION BY CX_CUSTOMER_KEY,
+                                CX_USECASE_NAME
+                                ORDER BY
+                                    CASE
+                                    BK_CX_LIFECYCLE_STAGE_NAME
+                                    WHEN 'Advocate' THEN 1
+                                    WHEN 'Optimize' THEN 2
+                                    WHEN 'Adopt' THEN 3
+                                    WHEN 'Engage' THEN 4
+                                    WHEN 'Use' THEN 5
+                                    WHEN 'Implement' THEN 6
+                                    WHEN 'Onboard' THEN 7
+                                    WHEN 'Purchase' THEN 8
+                                    END
+                                ) AS RN
+                            FROM
+                                CTE
+                            WHERE
+                                CURRENT_STAGE_FLG = 'Y'
+                                AND CUSTOMER_ELIGIBLE_FLG <> 'N'
+                            ) STAGE
+                        WHERE
+                            RN = 1
+                        ) LC_STG_AUTO ON CTE.CX_CUSTOMER_KEY = LC_STG_AUTO.CX_CUSTOMER_KEY
+                        AND CTE.CX_USECASE_NAME = LC_STG_AUTO.CX_USECASE_NAME
+                        /*left
+                        JOIN
+                        (
+                        SELECT  PRODUCT_NAME
+                        ,CX_CUSTOMER_BU_KEY
+                        ,MIN(BOOKINGS_PROCESS_DATE) BOOKINGS_PROCESS_DATE
+                        FROM CX_DB.CX_CA_EBV.BV_CX_BOOKINGS
+                        WHERE end_customer_party_id not IN ('-999')
+                        GROUP BY  1
+                        ,2
+                        ) BKG
+                        ON BKG.PRODUCT_NAME=CTE.BK_PRODUCT_ID AND BKG.CX_CUSTOMER_BU_KEY=CTE.CX_CUSTOMER_BU_KEY*/
+                    GROUP BY
+                        1,
+                        2,
+                        3,
+                        4
+                    )
+                    SELECT
+                    A.CUSTOMER_ID,
+                    A.CUSTOMER_NAME,
+                    A.CX_USECASE_NAME,
+                    C.MAX_LIFECYCLE_STAGE_NAME,
+                    A.ACCOUNT_INDENTIFIER,
+                    B.MAX_LIFECYCLE_STAGE_NAME CUSTOMER_MAX_LIFE_CYCLE_STAGE
+                    FROM
+                    SAV A
+                    LEFT JOIN (
+                        SELECT
+                        CUSTOMER_ID,
+                        MAX_LIFECYCLE_STAGE_NAME,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY CUSTOMER_ID
+                            ORDER BY
+                            CASE
+                                MAX_LIFECYCLE_STAGE_NAME
+                                WHEN 'Advocate' THEN 1
+                                WHEN 'Optimize' THEN 2
+                                WHEN 'Adopt' THEN 3
+                                WHEN 'Engage' THEN 4
+                                WHEN 'Use' THEN 5
+                                WHEN 'Implement' THEN 6
+                                WHEN 'Onboard' THEN 7
+                                WHEN 'Purchase' THEN 8
+                            END
+                        ) AS RN
+                        FROM
+                        SAV
+                    ) B ON A.CUSTOMER_ID = b.CUSTOMER_ID
+                    LEFT JOIN (
+                        SELECT
+                        CUSTOMER_ID,
+                        CX_USECASE_NAME,
+                        MAX_LIFECYCLE_STAGE_NAME,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY CUSTOMER_ID,
+                            CX_USECASE_NAME
+                            ORDER BY
+                            CASE
+                                MAX_LIFECYCLE_STAGE_NAME
+                                WHEN 'Advocate' THEN 1
+                                WHEN 'Optimize' THEN 2
+                                WHEN 'Adopt' THEN 3
+                                WHEN 'Engage' THEN 4
+                                WHEN 'Use' THEN 5
+                                WHEN 'Implement' THEN 6
+                                WHEN 'Onboard' THEN 7
+                                WHEN 'Purchase' THEN 8
+                            END ASC
+                        ) AS RN
+                        FROM
+                        SAV
+                    ) C ON A.CUSTOMER_ID = C.CUSTOMER_ID
+                    AND A.CX_USECASE_NAME = C.CX_USECASE_NAME
+                    WHERE
+                    1 = 1
+                    AND b.RN = 1
+                    AND c.RN = 1
+                    GROUP BY
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6;
+                            """
+
+            cs.execute(query_lifecycle)
+            df = cs.fetchall()
+            dna_columns = ['CUSTOMER_ID',	'CUSTOMER_NAME',	'CX_USECASE_NAME',
+                           'MAX_LIFECYCLE_STAGE_NAME', 'ACCOUNT_INDENTIFIER', 'CUSTOMER_MAX_LIFE_CYCLE_STAGE']
+            df = pd.DataFrame(df, columns=dna_columns)
+            dfs.append(df)
+            #sav_dna_df = pd.concat(dfs)
+
+        elif id_identifyer == 'CAV':
+            print('Entered as CAV')
+            query_lifecycle = f"""WITH CX AS (
+                    SELECT
+                        CX_CUSTOMER_BU_ID,
+                        CX_CUSTOMER_BU_KEY,
+                        CX_CUSTOMER_BU_NAME,
+                        CX_CUSTOMER_ID,
+                        CX_CUSTOMER_KEY,
+                        CX_CUSTOMER_NAME
+                    FROM
+                        CX_DB.CX_CA_EBV.BV_CXCUST_BU_PARTY_MAPPING
+                    WHERE
+                        CX_CUSTOMER_ID in ({ids})
+                    GROUP BY
+                        CX_CUSTOMER_BU_ID,
+                        CX_CUSTOMER_BU_KEY,
+                        CX_CUSTOMER_BU_NAME,
+                        CX_CUSTOMER_ID,
+                        CX_CUSTOMER_KEY,
+                        CX_CUSTOMER_NAME
+                    ),
+                    CSH AS (
+                    SELECT
+                        DISTINCT LEVEL3_COMP_KEY AS USE_CASE_KEY,
+                        LEVEL3_COMP_ID AS CX_USECASE_ID,
+                        LEVEL3_UC_NAME AS CX_USECASE_NAME,
+                        BK_PRODUCT_ID --K2_PRODUCT_CATEGORY_NM AS PRODUCT
+                    FROM
+                        CX_DB.CX_CA_EBV.BV_CX_SOLUTION_HIERARCHY CX_SOL
+                    GROUP BY
+                        1,
+                        2,
+                        3,
+                        4
+                    ),
+                    CTE AS (
+                    SELECT
+                        CX.CX_CUSTOMER_ID,
+                        CX.CX_CUSTOMER_NAME,
+                        CX.CX_CUSTOMER_BU_ID,
+                        LC_STG.CX_CUSTOMER_BU_KEY,
+                        CX_CUSTOMER_KEY,
+                        CX.CX_CUSTOMER_BU_NAME,
+                        BK_CX_LIFECYCLE_STAGE_HIER_ID,
+                        LC_STG.CX_LIFECYCLE_STAGE_HIER_KEY,
+                        CX_USECASE_NAME,
+                        LC_STG.BK_CX_LIFECYCLE_STAGE_NAME,
+                        HIER.CX_SOLUTION_HIER_USE_CASE_KEY,
+                        LC_STG.CURRENT_STAGE_FLG,
+                        CUSTOMER_ELIGIBLE_FLG
+                    FROM
+                        CX_DB.CX_CA_EBV.BV_CX_CUST_BU_LC_STG_CMPLTN LC_STG
+                        INNER JOIN (
+                        SELECT
+                            CX_LIFECYCLE_STAGE_HIER_KEY,
+                            CX_SOLUTION_HIER_USE_CASE_KEY,
+                            BK_CX_LIFECYCLE_STAGE_HIER_ID
+                        FROM
+                            CX_DB.CX_CA_EBV.BV_CX_LIFECYCLE_STAGE_HIERARCHY
+                        WHERE
+                            END_TV_DTM = '3500-01-01'
+                            AND EDWSF_SOURCE_DELETED_FLAG = 'N'
+                        GROUP BY
+                            1,
+                            2,
+                            3
+                        ) HIER ON LC_STG.CX_LIFECYCLE_STAGE_HIER_KEY = HIER.CX_LIFECYCLE_STAGE_HIER_KEY
+                        INNER JOIN CSH ON CSH.USE_CASE_KEY = HIER.CX_SOLUTION_HIER_USE_CASE_KEY
+                        INNER JOIN CX ON LC_STG.CX_CUSTOMER_BU_KEY = CX.CX_CUSTOMER_BU_KEY
+                    WHERE
+                        LC_STG.CUSTOMER_ELIGIBLE_FLG <> 'N'
+                    GROUP BY
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6,
+                        7,
+                        8,
+                        9,
+                        10,
+                        11,
+                        12,
+                        13
+                    ),
+                    cav AS (
+                    SELECT
+                        CX_CUSTOMER_ID CUSTOMER_ID,
+                        CX_CUSTOMER_NAME CUSTOMER_NAME,
+                        CTE.CX_USECASE_NAME,
+                        MAX_LIFECYCLE_STAGE_NAME,
+                        'CAV' AS ACCOUNT_INDENTIFIER -- , MIN(BOOKINGS_PROCESS_DATE) ACTUAL_PURCHASE_DATE
+                    FROM
+                        CTE CTE
+                        LEFT JOIN (
+                        SELECT
+                            CX_CUSTOMER_KEY,
+                            BK_CX_LIFECYCLE_STAGE_NAME AS MAX_LIFECYCLE_STAGE_NAME,
+                            CX_USECASE_NAME
+                        FROM
+                            (
+                            SELECT
+                                CX_CUSTOMER_KEY,
+                                BK_CX_LIFECYCLE_STAGE_NAME,
+                                CX_USECASE_NAME,
+                                ROW_NUMBER() OVER (
+                                PARTITION BY CX_CUSTOMER_KEY,
+                                CX_USECASE_NAME
+                                ORDER BY
+                                    CASE
+                                    BK_CX_LIFECYCLE_STAGE_NAME
+                                    WHEN 'Advocate' THEN 1
+                                    WHEN 'Optimize' THEN 2
+                                    WHEN 'Adopt' THEN 3
+                                    WHEN 'Engage' THEN 4
+                                    WHEN 'Use' THEN 5
+                                    WHEN 'Implement' THEN 6
+                                    WHEN 'Onboard' THEN 7
+                                    WHEN 'Purchase' THEN 8
+                                    END
+                                ) AS RN
+                            FROM
+                                CTE
+                            WHERE
+                                CURRENT_STAGE_FLG = 'Y'
+                                AND CUSTOMER_ELIGIBLE_FLG <> 'N'
+                            ) STAGE
+                        WHERE
+                            RN = 1
+                        ) LC_STG_AUTO ON CTE.CX_CUSTOMER_KEY = LC_STG_AUTO.CX_CUSTOMER_KEY
+                        AND CTE.CX_USECASE_NAME = LC_STG_AUTO.CX_USECASE_NAME
+                        /*left
+                        JOIN
+                        (
+                        SELECT  PRODUCT_NAME
+                        ,CX_CUSTOMER_BU_KEY
+                        ,MIN(BOOKINGS_PROCESS_DATE) BOOKINGS_PROCESS_DATE
+                        FROM CX_DB.CX_CA_EBV.BV_CX_BOOKINGS
+                        WHERE end_customer_party_id not IN ('-999')
+                        GROUP BY  1
+                        ,2
+                        ) BKG
+                        ON BKG.PRODUCT_NAME=CTE.BK_PRODUCT_ID AND BKG.CX_CUSTOMER_BU_KEY=CTE.CX_CUSTOMER_BU_KEY*/
+                    GROUP BY
+                        1,
+                        2,
+                        3,
+                        4
+                    )
+                    SELECT
+                    A.CUSTOMER_ID,
+                    A.CUSTOMER_NAME,
+                    A.CX_USECASE_NAME,
+                    C.MAX_LIFECYCLE_STAGE_NAME,
+                    A.ACCOUNT_INDENTIFIER,
+                    B.MAX_LIFECYCLE_STAGE_NAME CUSTOMER_MAX_LIFE_CYCLE_STAGE
+                    FROM
+                    CAV A
+                    LEFT JOIN (
+                        SELECT
+                        CUSTOMER_ID,
+                        MAX_LIFECYCLE_STAGE_NAME,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY CUSTOMER_ID
+                            ORDER BY
+                            CASE
+                                MAX_LIFECYCLE_STAGE_NAME
+                                WHEN 'Advocate' THEN 1
+                                WHEN 'Optimize' THEN 2
+                                WHEN 'Adopt' THEN 3
+                                WHEN 'Engage' THEN 4
+                                WHEN 'Use' THEN 5
+                                WHEN 'Implement' THEN 6
+                                WHEN 'Onboard' THEN 7
+                                WHEN 'Purchase' THEN 8
+                            END
+                        ) AS RN
+                        FROM
+                        CAV
+                    ) B ON A.CUSTOMER_ID = b.CUSTOMER_ID
+                    LEFT JOIN (
+                        SELECT
+                        CUSTOMER_ID,
+                        CX_USECASE_NAME,
+                        MAX_LIFECYCLE_STAGE_NAME,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY CUSTOMER_ID,
+                            CX_USECASE_NAME
+                            ORDER BY
+                            CASE
+                                MAX_LIFECYCLE_STAGE_NAME
+                                WHEN 'Advocate' THEN 1
+                                WHEN 'Optimize' THEN 2
+                                WHEN 'Adopt' THEN 3
+                                WHEN 'Engage' THEN 4
+                                WHEN 'Use' THEN 5
+                                WHEN 'Implement' THEN 6
+                                WHEN 'Onboard' THEN 7
+                                WHEN 'Purchase' THEN 8
+                            END ASC
+                        ) AS RN
+                        FROM
+                        CAV
+                    ) C ON A.CUSTOMER_ID = C.CUSTOMER_ID
+                    AND A.CX_USECASE_NAME = C.CX_USECASE_NAME
+                    WHERE
+                    1 = 1
+                    AND b.RN = 1
+                    AND c.RN = 1
+                    GROUP BY
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6;
+                """
+
+            cs.execute(query_lifecycle)
+            df = cs.fetchall()
+            dna_columns = ['CUSTOMER_ID',	'CUSTOMER_NAME',	'CX_USECASE_NAME',
+                           'MAX_LIFECYCLE_STAGE_NAME', 'ACCOUNT_INDENTIFIER', 'CUSTOMER_MAX_LIFE_CYCLE_STAGE']
+            df = pd.DataFrame(df, columns=dna_columns)
+            dfs.append(df)
+            #cav_dna_df = pd.concat(dfs)
+
+        elif id_identifyer == 'GU':
+            print("Entered as GU")
+            query_lifecycle = f""" WITH CX AS (
+                    SELECT
+                        CX_CUSTOMER_BU_ID,
+                        CX_CUSTOMER_BU_KEY,
+                        CX_CUSTOMER_BU_NAME,
+                        CX_CUSTOMER_ID,
+                        CX_CUSTOMER_KEY,
+                        CX_CUSTOMER_NAME,
+                        cust1.GU_PARTY_SSOT_PARTY_ID_INT,
+                        cust1.GU_PRIMARY_NAME
+                    FROM
+                        CX_DB.CX_CA_EBV.BV_CXCUST_BU_PARTY_MAPPING CUST
+                        INNER JOIN CX_DB.CX_CA_EBV."BV_CUSTOMER_PARTY_HIERARCHY" cust1 ON CUST1.BRANCH_PARTY_SSOT_PARTY_ID_INT = CUST.CR_PARTY_ID
+                    WHERE
+                        cust1.GU_PARTY_SSOT_PARTY_ID_INT in ({ids})
+                    GROUP BY
+                        CX_CUSTOMER_BU_ID,
+                        CX_CUSTOMER_BU_KEY,
+                        CX_CUSTOMER_BU_NAME,
+                        CX_CUSTOMER_ID,
+                        CX_CUSTOMER_KEY,
+                        CX_CUSTOMER_NAME,
+                        cust1.GU_PARTY_SSOT_PARTY_ID_INT,
+                        cust1.GU_PRIMARY_NAME
+                    ),
+                    CSH AS (
+                    SELECT
+                        DISTINCT LEVEL3_COMP_KEY AS USE_CASE_KEY,
+                        LEVEL3_COMP_ID AS CX_USECASE_ID,
+                        LEVEL3_UC_NAME AS CX_USECASE_NAME,
+                        BK_PRODUCT_ID --K2_PRODUCT_CATEGORY_NM AS PRODUCT
+                    FROM
+                        CX_DB.CX_CA_EBV.BV_CX_SOLUTION_HIERARCHY CX_SOL
+                    GROUP BY
+                        1,
+                        2,
+                        3,
+                        4
+                    ),
+                    CTE AS (
+                    SELECT
+                        CX.CX_CUSTOMER_ID,
+                        CX.CX_CUSTOMER_NAME,
+                        CX.CX_CUSTOMER_BU_ID,
+                        CX_CUSTOMER_KEY,
+                        BK_CX_LIFECYCLE_STAGE_HIER_ID,
+                        LC_STG.CX_LIFECYCLE_STAGE_HIER_KEY,
+                        CX_USECASE_NAME,
+                        LC_STG.BK_CX_LIFECYCLE_STAGE_NAME,
+                        HIER.CX_SOLUTION_HIER_USE_CASE_KEY,
+                        LC_STG.CURRENT_STAGE_FLG,
+                        CUSTOMER_ELIGIBLE_FLG,
+                        CX.GU_PARTY_SSOT_PARTY_ID_INT,
+                        CX.GU_PRIMARY_NAME
+                    FROM
+                        CX_DB.CX_CA_EBV.BV_CX_CUST_BU_LC_STG_CMPLTN LC_STG
+                        INNER JOIN (
+                        SELECT
+                            CX_LIFECYCLE_STAGE_HIER_KEY,
+                            CX_SOLUTION_HIER_USE_CASE_KEY,
+                            BK_CX_LIFECYCLE_STAGE_HIER_ID
+                        FROM
+                            CX_DB.CX_CA_EBV.BV_CX_LIFECYCLE_STAGE_HIERARCHY
+                        WHERE
+                            END_TV_DTM = '3500-01-01'
+                            AND EDWSF_SOURCE_DELETED_FLAG = 'N'
+                        GROUP BY
+                            1,
+                            2,
+                            3
+                        ) HIER ON LC_STG.CX_LIFECYCLE_STAGE_HIER_KEY = HIER.CX_LIFECYCLE_STAGE_HIER_KEY
+                        INNER JOIN CSH ON CSH.USE_CASE_KEY = HIER.CX_SOLUTION_HIER_USE_CASE_KEY
+                        INNER JOIN CX ON LC_STG.CX_CUSTOMER_BU_KEY = CX.CX_CUSTOMER_BU_KEY
+                    WHERE
+                        LC_STG.CUSTOMER_ELIGIBLE_FLG <> 'N'
+                    GROUP BY
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6,
+                        7,
+                        8,
+                        9,
+                        10,
+                        11,
+                        12,
+                        13
+                    ),
+                    GU AS (
+                    SELECT
+                        GU_PARTY_SSOT_PARTY_ID_INT CUSTOMER_ID,
+                        GU_PRIMARY_NAME CUSTOMER_NAME,
+                        CTE.CX_USECASE_NAME,
+                        MAX_LIFECYCLE_STAGE_NAME,
+                        'GU' AS ACCOUNT_INDENTIFIER -- , MIN(BOOKINGS_PROCESS_DATE) ACTUAL_PURCHASE_DATE
+                    FROM
+                        CTE CTE
+                        LEFT JOIN (
+                        SELECT
+                            CX_CUSTOMER_KEY,
+                            BK_CX_LIFECYCLE_STAGE_NAME AS MAX_LIFECYCLE_STAGE_NAME,
+                            CX_USECASE_NAME
+                        FROM
+                            (
+                            SELECT
+                                CX_CUSTOMER_KEY,
+                                BK_CX_LIFECYCLE_STAGE_NAME,
+                                CX_USECASE_NAME,
+                                ROW_NUMBER() OVER (
+                                PARTITION BY CX_CUSTOMER_KEY,
+                                CX_USECASE_NAME
+                                ORDER BY
+                                    CASE
+                                    BK_CX_LIFECYCLE_STAGE_NAME
+                                    WHEN 'Advocate' THEN 1
+                                    WHEN 'Optimize' THEN 2
+                                    WHEN 'Adopt' THEN 3
+                                    WHEN 'Engage' THEN 4
+                                    WHEN 'Use' THEN 5
+                                    WHEN 'Implement' THEN 6
+                                    WHEN 'Onboard' THEN 7
+                                    WHEN 'Purchase' THEN 8
+                                    END
+                                ) AS RN
+                            FROM
+                                CTE
+                            WHERE
+                                CURRENT_STAGE_FLG = 'Y'
+                                AND CUSTOMER_ELIGIBLE_FLG <> 'N'
+                            ) STAGE
+                        WHERE
+                            RN = 1
+                        ) LC_STG_AUTO ON CTE.CX_CUSTOMER_KEY = LC_STG_AUTO.CX_CUSTOMER_KEY
+                        AND CTE.CX_USECASE_NAME = LC_STG_AUTO.CX_USECASE_NAME
+                        /*left
+                        JOIN
+                        (
+                        SELECT  PRODUCT_NAME
+                        ,CX_CUSTOMER_BU_KEY
+                        ,MIN(BOOKINGS_PROCESS_DATE) BOOKINGS_PROCESS_DATE
+                        FROM CX_DB.CX_CA_EBV.BV_CX_BOOKINGS
+                        WHERE end_customer_party_id not IN ('-999')
+                        GROUP BY  1
+                        ,2
+                        ) BKG
+                        ON BKG.PRODUCT_NAME=CTE.BK_PRODUCT_ID AND BKG.CX_CUSTOMER_BU_KEY=CTE.CX_CUSTOMER_BU_KEY*/
+                    GROUP BY
+                        1,
+                        2,
+                        3,
+                        4
+                    )
+                    SELECT
+                    A.CUSTOMER_ID,
+                    A.CUSTOMER_NAME,
+                    A.CX_USECASE_NAME,
+                    C.MAX_LIFECYCLE_STAGE_NAME,
+                    A.ACCOUNT_INDENTIFIER,
+                    B.MAX_LIFECYCLE_STAGE_NAME CUSTOMER_MAX_LIFE_CYCLE_STAGE
+                    FROM
+                    GU A
+                    LEFT JOIN (
+                        SELECT
+                        CUSTOMER_ID,
+                        MAX_LIFECYCLE_STAGE_NAME,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY CUSTOMER_ID
+                            ORDER BY
+                            CASE
+                                MAX_LIFECYCLE_STAGE_NAME
+                                WHEN 'Advocate' THEN 1
+                                WHEN 'Optimize' THEN 2
+                                WHEN 'Adopt' THEN 3
+                                WHEN 'Engage' THEN 4
+                                WHEN 'Use' THEN 5
+                                WHEN 'Implement' THEN 6
+                                WHEN 'Onboard' THEN 7
+                                WHEN 'Purchase' THEN 8
+                            END
+                        ) AS RN
+                        FROM
+                        GU
+                    ) B ON A.CUSTOMER_ID = b.CUSTOMER_ID
+                    LEFT JOIN (
+                        SELECT
+                        CUSTOMER_ID,
+                        CX_USECASE_NAME,
+                        MAX_LIFECYCLE_STAGE_NAME,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY CUSTOMER_ID,
+                            CX_USECASE_NAME
+                            ORDER BY
+                            CASE
+                                MAX_LIFECYCLE_STAGE_NAME
+                                WHEN 'Advocate' THEN 1
+                                WHEN 'Optimize' THEN 2
+                                WHEN 'Adopt' THEN 3
+                                WHEN 'Engage' THEN 4
+                                WHEN 'Use' THEN 5
+                                WHEN 'Implement' THEN 6
+                                WHEN 'Onboard' THEN 7
+                                WHEN 'Purchase' THEN 8
+                            END ASC
+                        ) AS RN
+                        FROM
+                        GU
+                    ) C ON A.CUSTOMER_ID = C.CUSTOMER_ID
+                    AND A.CX_USECASE_NAME = C.CX_USECASE_NAME
+                    WHERE
+                    1 = 1
+                    AND b.RN = 1
+                    AND c.RN = 1
+                    GROUP BY
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6;
+                """
+
+            cs.execute(query_lifecycle)
+            df = cs.fetchall()
+            dna_columns = ['CUSTOMER_ID',	'CUSTOMER_NAME',	'CX_USECASE_NAME',
+                           'MAX_LIFECYCLE_STAGE_NAME', 'ACCOUNT_INDENTIFIER', 'CUSTOMER_MAX_LIFE_CYCLE_STAGE']
+            df = pd.DataFrame(df, columns=dna_columns)
+            dfs.append(df)
+            #gu_dna_df = pd.concat(dfs)
+
+        elif id_identifyer == 'CR':  # This one is the query for CR Party
+            print("Entered as CR")
+            query_lifecycle = f"""WITH CX AS (
+                SELECT
+                    CX_CUSTOMER_BU_ID,
+                    CX_CUSTOMER_BU_KEY,
+                    CX_CUSTOMER_BU_NAME,
+                    CX_CUSTOMER_ID,
+                    CX_CUSTOMER_KEY,
+                    CX_CUSTOMER_NAME,
+                    cust1.BRANCH_PARTY_SSOT_PARTY_ID_INT,
+                    cust1.BRANCH_PRIMARY_NAME
+                FROM
+                    CX_DB.CX_CA_EBV.BV_CXCUST_BU_PARTY_MAPPING CUST
+                    INNER JOIN CX_DB.CX_CA_EBV."BV_CUSTOMER_PARTY_HIERARCHY" cust1 ON CUST1.BRANCH_PARTY_SSOT_PARTY_ID_INT = CUST.CR_PARTY_ID
+                WHERE
+                    BRANCH_PARTY_SSOT_PARTY_ID_INT in ({ids})
+                GROUP BY
+                    CX_CUSTOMER_BU_ID,
+                    CX_CUSTOMER_BU_KEY,
+                    CX_CUSTOMER_BU_NAME,
+                    CX_CUSTOMER_ID,
+                    CX_CUSTOMER_KEY,
+                    CX_CUSTOMER_NAME,
+                    cust1.BRANCH_PARTY_SSOT_PARTY_ID_INT,
+                    cust1.BRANCH_PRIMARY_NAME
+                ),
+                CSH AS (
+                SELECT
+                    DISTINCT LEVEL3_COMP_KEY AS USE_CASE_KEY,
+                    LEVEL3_COMP_ID AS CX_USECASE_ID,
+                    LEVEL3_UC_NAME AS CX_USECASE_NAME,
+                    BK_PRODUCT_ID --K2_PRODUCT_CATEGORY_NM AS PRODUCT
+                FROM
+                    CX_DB.CX_CA_EBV.BV_CX_SOLUTION_HIERARCHY CX_SOL
+                GROUP BY
+                    1,
+                    2,
+                    3,
+                    4
+                ),
+                CTE AS (
+                SELECT
+                    CX.CX_CUSTOMER_ID,
+                    CX.CX_CUSTOMER_NAME,
+                    CX.CX_CUSTOMER_BU_ID,
+                    CX_CUSTOMER_KEY,
+                    BK_CX_LIFECYCLE_STAGE_HIER_ID,
+                    LC_STG.CX_LIFECYCLE_STAGE_HIER_KEY,
+                    CX_USECASE_NAME,
+                    LC_STG.BK_CX_LIFECYCLE_STAGE_NAME,
+                    HIER.CX_SOLUTION_HIER_USE_CASE_KEY,
+                    LC_STG.CURRENT_STAGE_FLG,
+                    CUSTOMER_ELIGIBLE_FLG,
+                    CX.BRANCH_PARTY_SSOT_PARTY_ID_INT,
+                    CX.BRANCH_PRIMARY_NAME
+                FROM
+                    CX_DB.CX_CA_EBV.BV_CX_CUST_BU_LC_STG_CMPLTN LC_STG
+                    INNER JOIN (
+                    SELECT
+                        CX_LIFECYCLE_STAGE_HIER_KEY,
+                        CX_SOLUTION_HIER_USE_CASE_KEY,
+                        BK_CX_LIFECYCLE_STAGE_HIER_ID
+                    FROM
+                        CX_DB.CX_CA_EBV.BV_CX_LIFECYCLE_STAGE_HIERARCHY
+                    WHERE
+                        END_TV_DTM = '3500-01-01'
+                        AND EDWSF_SOURCE_DELETED_FLAG = 'N'
+                    GROUP BY
+                        1,
+                        2,
+                        3
+                    ) HIER ON LC_STG.CX_LIFECYCLE_STAGE_HIER_KEY = HIER.CX_LIFECYCLE_STAGE_HIER_KEY
+                    INNER JOIN CSH ON CSH.USE_CASE_KEY = HIER.CX_SOLUTION_HIER_USE_CASE_KEY
+                    INNER JOIN CX ON LC_STG.CX_CUSTOMER_BU_KEY = CX.CX_CUSTOMER_BU_KEY
+                WHERE
+                    LC_STG.CUSTOMER_ELIGIBLE_FLG <> 'N'
+                GROUP BY
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13
+                ),
+                CR AS (
+                SELECT
+                    BRANCH_PARTY_SSOT_PARTY_ID_INT CUSTOMER_ID,
+                    BRANCH_PRIMARY_NAME CUSTOMER_NAME,
+                    CTE.CX_USECASE_NAME,
+                    MAX_LIFECYCLE_STAGE_NAME,
+                    'CR' AS ACCOUNT_INDENTIFIER -- , MIN(BOOKINGS_PROCESS_DATE) ACTUAL_PURCHASE_DATE
+                FROM
+                    CTE CTE
+                    LEFT JOIN (
+                    SELECT
+                        CX_CUSTOMER_KEY,
+                        BK_CX_LIFECYCLE_STAGE_NAME AS MAX_LIFECYCLE_STAGE_NAME,
+                        CX_USECASE_NAME
+                    FROM
+                        (
+                        SELECT
+                            CX_CUSTOMER_KEY,
+                            BK_CX_LIFECYCLE_STAGE_NAME,
+                            CX_USECASE_NAME,
+                            ROW_NUMBER() OVER (
+                            PARTITION BY CX_CUSTOMER_KEY,
+                            CX_USECASE_NAME
+                            ORDER BY
+                                CASE
+                                BK_CX_LIFECYCLE_STAGE_NAME
+                                WHEN 'Advocate' THEN 1
+                                WHEN 'Optimize' THEN 2
+                                WHEN 'Adopt' THEN 3
+                                WHEN 'Engage' THEN 4
+                                WHEN 'Use' THEN 5
+                                WHEN 'Implement' THEN 6
+                                WHEN 'Onboard' THEN 7
+                                WHEN 'Purchase' THEN 8
+                                END
+                            ) AS RN
+                        FROM
+                            CTE
+                        WHERE
+                            CURRENT_STAGE_FLG = 'Y'
+                            AND CUSTOMER_ELIGIBLE_FLG <> 'N'
+                        ) STAGE
+                    WHERE
+                        RN = 1
+                    ) LC_STG_AUTO ON CTE.CX_CUSTOMER_KEY = LC_STG_AUTO.CX_CUSTOMER_KEY
+                    AND CTE.CX_USECASE_NAME = LC_STG_AUTO.CX_USECASE_NAME
+                    /*left
+                    JOIN
+                    (
+                    SELECT  PRODUCT_NAME
+                    ,CX_CUSTOMER_BU_KEY
+                    ,MIN(BOOKINGS_PROCESS_DATE) BOOKINGS_PROCESS_DATE
+                    FROM CX_DB.CX_CA_EBV.BV_CX_BOOKINGS
+                    WHERE end_customer_party_id not IN ('-999')
+                    GROUP BY  1
+                    ,2
+                    ) BKG
+                    ON BKG.PRODUCT_NAME=CTE.BK_PRODUCT_ID AND BKG.CX_CUSTOMER_BU_KEY=CTE.CX_CUSTOMER_BU_KEY*/
+                GROUP BY
+                    1,
+                    2,
+                    3,
+                    4
+                )
+                SELECT
+                A.CUSTOMER_ID,
+                A.CUSTOMER_NAME,
+                A.CX_USECASE_NAME,
+                C.MAX_LIFECYCLE_STAGE_NAME,
+                A.ACCOUNT_INDENTIFIER,
+                B.MAX_LIFECYCLE_STAGE_NAME CUSTOMER_MAX_LIFE_CYCLE_STAGE
+                FROM
+                CR A
+                LEFT JOIN (
+                    SELECT
+                    CUSTOMER_ID,
+                    MAX_LIFECYCLE_STAGE_NAME,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY CUSTOMER_ID
+                        ORDER BY
+                        CASE
+                            MAX_LIFECYCLE_STAGE_NAME
+                            WHEN 'Advocate' THEN 1
+                            WHEN 'Optimize' THEN 2
+                            WHEN 'Adopt' THEN 3
+                            WHEN 'Engage' THEN 4
+                            WHEN 'Use' THEN 5
+                            WHEN 'Implement' THEN 6
+                            WHEN 'Onboard' THEN 7
+                            WHEN 'Purchase' THEN 8
+                        END
+                    ) AS RN
+                    FROM
+                    CR
+                ) B ON A.CUSTOMER_ID = b.CUSTOMER_ID
+                LEFT JOIN (
+                    SELECT
+                    CUSTOMER_ID,
+                    CX_USECASE_NAME,
+                    MAX_LIFECYCLE_STAGE_NAME,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY CUSTOMER_ID,
+                        CX_USECASE_NAME
+                        ORDER BY
+                        CASE
+                            MAX_LIFECYCLE_STAGE_NAME
+                            WHEN 'Advocate' THEN 1
+                            WHEN 'Optimize' THEN 2
+                            WHEN 'Adopt' THEN 3
+                            WHEN 'Engage' THEN 4
+                            WHEN 'Use' THEN 5
+                            WHEN 'Implement' THEN 6
+                            WHEN 'Onboard' THEN 7
+                            WHEN 'Purchase' THEN 8
+                        END ASC
+                    ) AS RN
+                    FROM
+                    CR
+                ) C ON A.CUSTOMER_ID = C.CUSTOMER_ID
+                AND A.CX_USECASE_NAME = C.CX_USECASE_NAME
+                WHERE
+                1 = 1
+                AND b.RN = 1
+                AND c.RN = 1
+                GROUP BY
+                1,
+                2,
+                3,
+                4,
+                5,
+                6;
+        
+        
+                """
+            cs.execute(query_lifecycle)
+            df = cs.fetchall()
+            dna_columns = ['CUSTOMER_ID',	'CUSTOMER_NAME',	'CX_USECASE_NAME',
+                           'MAX_LIFECYCLE_STAGE_NAME', 'ACCOUNT_INDENTIFIER', 'CUSTOMER_MAX_LIFE_CYCLE_STAGE']
+            df = pd.DataFrame(df, columns=dna_columns)
+            dfs.append(df)
+
+    dna_df = pd.concat(dfs)
+
+    return dna_df
+
+
+def get_tac_df_new(user, ids, id_type):
     """Get TAC data from Snowflake by given Party ids and
     creates a DataFrame
-    
+
     param: user - cisco e-mail address
     param: sav_ids - list of given sav ids"""
-    
+
     if ids == '':
         ids = 0
-        
+
     cnn = snowflake.connector.connect(
-    user=user,
-    authenticator='externalbrowser',
-    role='CX_CA_BUS_ANALYST_ROLE',
-    warehouse='CX_CA_RPT_WH',
-    database='CX_DB',
-    schema='CX_CA_BR',
-    account='cisco.us-east-1'
+        user=user,
+        authenticator='externalbrowser',
+        role='CX_CA_BUS_ANALYST_ROLE',
+        warehouse='CX_CA_RPT_WH',
+        database='CX_DB',
+        schema='CX_CA_BR',
+        account='cisco.us-east-1'
     )
-    
+
     cs = cnn.cursor()
-    
+
     if id_type == 'SAV ID':
         query_tac = f"""SELECT * FROM "CX_DB"."CX_CA_BR"."TAC_UNION"
         WHERE FLAG = 'SAV'
@@ -361,83 +1356,85 @@ def get_tac_df_new(user,ids,id_type):
         query_tac = f"""SELECT * FROM "CX_DB"."CX_CA_BR"."TAC_UNION"
         WHERE FLAG = 'CAV'
         AND ID in ({ids})"""
- 
+
     cs.execute(query_tac)
     df = cs.fetchall()
     cs.close()
     cnn.close()
-    
+
     # CURRENT_OWNER_CCO_ID
     # INCIDENT_CONTACT_EMAIL  ## Deleted from the view made by Facundo
 
     tac_columns = ['INCIDENT_ID', 'INCIDENT_NUMBER', 'CURRENT_SEVERITY_INT',
-       'MAX_SEVERITY_INT', 'INCDT_CREATION_DATE',
-       'INCDT_CRET_FISCAL_WEEK_NUM_INT', 'SR Creation FY Week',
-       'SR Creation FY Month', 'SR Creation FY Quarter',
-       'SR Creation Fiscal Year', 'CLOSED_DATE',
-       'INCDT_CLOSED_FISCAL_MONTH_NM', 'INCDT_CLOSED_FISCAL_QTR_NM',
-       'INCDT_CLOSED_FISCAL_YEAR', 'SR_TIME_TO_CLOSE_DAYS_CNT',
-       'CURRENT_SERIAL_NUMBER', 'COMPLEXITY_DESCR', 'INITIAL_PROBLEM_CODE',
-       'OUTAGE_FLAG', 'ENTRY_CHANNEL_NAME', 'REQUEST_TYPE_NAME', 'BUG_CNT',
-       'INCIDENT_STATUS',
-       'CURRENT_ENTITLEMENT_TYPE_NAME', 'INCIDENT_CONTRACT_STATUS',
-       'CONTRACT NUMBER', 'CONTRACT_TYPE', 'CREATION_CONTRACT_SVC_LINE_ID',
-       'HW_VERSION_ID', 'SW_VERSION_ID',
-       'TAC_PRODUCT_SW_KEY', 'UPDATED_COT_TECH_KEY', 'INCIDENT_TYPE',
-       'PROBLEM_CODE', 'RESOLUTION_CODE', 'PART_NUMBER', 'SOLUTION_CNT',
-       'ERP_FAMILY', 'ERP_PLATFORM_NAME', 'TAC_PRODUCT_HW_KEY',
-       'TAC_HW_PLATFORM_NAME', 'TECH_NAME', 'BUSINESS_UNIT_CODE',
-       'HYBRID_PRODUCT_FAMILY', 'SUB_TECH_NAME', 'SR_PRODUCT_ID',
-       'UNDERLYING_CAUSE_NAME', 'UNDERLYING_CAUSE_DESCRIPTION', 'CASE_NUMBER',
-       'B2B_FLAG', 'TECH_ID', 'SUB_TECH_ID', 'SW_VERSION_ACT_ID',
-       'SW_VERSION_NAME', 'VALID_SR_FILTER_FLAG', 'CUSTOMER_VERTICAL_CD',
-       'CUSTOMER_MARKET_SEGMENT_CD', 'ISO_COUNTRY_CD',
-       'Initial Time to Resolution', 'Final Time to Resolution', 'SRC_DEL_FLG',
-       'Business Ownership Time', 'Customer Ownership Time',
-       'Other Ownership Time', 'Delivery Ownership Time', 'CUSTOMER_NAME',
-       'PARTY ID', 'PARTY NAME', 'ID', 'SERVICE_SUBGROUP_DESC',
-       'SERVICE_LEVLE_CODE', 'SERVICE_PROGRAM', 'SERVICE_BRAND',
-       'SR_TECHNOLOGY', 'SR_SUB_TECHNOLOGY', 'BE_INT', 'SUB_BE_INT', 'FLAG',
-       'Data Extracted Date']
+                   'MAX_SEVERITY_INT', 'INCDT_CREATION_DATE',
+                   'INCDT_CRET_FISCAL_WEEK_NUM_INT', 'SR Creation FY Week',
+                   'SR Creation FY Month', 'SR Creation FY Quarter',
+                   'SR Creation Fiscal Year', 'CLOSED_DATE',
+                   'INCDT_CLOSED_FISCAL_MONTH_NM', 'INCDT_CLOSED_FISCAL_QTR_NM',
+                   'INCDT_CLOSED_FISCAL_YEAR', 'SR_TIME_TO_CLOSE_DAYS_CNT',
+                   'CURRENT_SERIAL_NUMBER', 'COMPLEXITY_DESCR', 'INITIAL_PROBLEM_CODE',
+                   'OUTAGE_FLAG', 'ENTRY_CHANNEL_NAME', 'REQUEST_TYPE_NAME', 'BUG_CNT',
+                   'INCIDENT_STATUS',
+                   'CURRENT_ENTITLEMENT_TYPE_NAME', 'INCIDENT_CONTRACT_STATUS',
+                   'CONTRACT NUMBER', 'CONTRACT_TYPE', 'CREATION_CONTRACT_SVC_LINE_ID',
+                   'HW_VERSION_ID', 'SW_VERSION_ID',
+                   'TAC_PRODUCT_SW_KEY', 'UPDATED_COT_TECH_KEY', 'INCIDENT_TYPE',
+                   'PROBLEM_CODE', 'RESOLUTION_CODE', 'PART_NUMBER', 'SOLUTION_CNT',
+                   'ERP_FAMILY', 'ERP_PLATFORM_NAME', 'TAC_PRODUCT_HW_KEY',
+                   'TAC_HW_PLATFORM_NAME', 'TECH_NAME', 'BUSINESS_UNIT_CODE',
+                   'HYBRID_PRODUCT_FAMILY', 'SUB_TECH_NAME', 'SR_PRODUCT_ID',
+                   'UNDERLYING_CAUSE_NAME', 'UNDERLYING_CAUSE_DESCRIPTION', 'CASE_NUMBER',
+                   'B2B_FLAG', 'TECH_ID', 'SUB_TECH_ID', 'SW_VERSION_ACT_ID',
+                   'SW_VERSION_NAME', 'VALID_SR_FILTER_FLAG', 'CUSTOMER_VERTICAL_CD',
+                   'CUSTOMER_MARKET_SEGMENT_CD', 'ISO_COUNTRY_CD',
+                   'Initial Time to Resolution', 'Final Time to Resolution', 'SRC_DEL_FLG',
+                   'Business Ownership Time', 'Customer Ownership Time',
+                   'Other Ownership Time', 'Delivery Ownership Time', 'CUSTOMER_NAME',
+                   'PARTY ID', 'PARTY NAME', 'ID', 'SERVICE_SUBGROUP_DESC',
+                   'SERVICE_LEVLE_CODE', 'SERVICE_PROGRAM', 'SERVICE_BRAND',
+                   'SR_TECHNOLOGY', 'SR_SUB_TECHNOLOGY', 'BE_INT', 'SUB_BE_INT', 'FLAG',
+                   'Data Extracted Date']
 
-    tac_df = pd.DataFrame(df,columns=tac_columns)
-    
+    tac_df = pd.DataFrame(df, columns=tac_columns)
+
     types = tac_df.dtypes.to_dict()
-    
+
     for t in types:
         if types[t] == "int64":
-            tac_df[t]=tac_df[t].fillna(0)
+            tac_df[t] = tac_df[t].fillna(0)
         elif types[t] == "float64":
-            tac_df[t]=tac_df[t].fillna(0.0)
+            tac_df[t] = tac_df[t].fillna(0.0)
         else:
-            tac_df[t]=tac_df[t].fillna('')
-            
-    tac_df[['CURRENT_SEVERITY_INT','MAX_SEVERITY_INT']] = tac_df[['CURRENT_SEVERITY_INT','MAX_SEVERITY_INT']].astype('int32')
-    tac_df[['SR_TIME_TO_CLOSE_DAYS_CNT']] = tac_df[['SR_TIME_TO_CLOSE_DAYS_CNT']].astype('float')
+            tac_df[t] = tac_df[t].fillna('')
+
+    tac_df[['CURRENT_SEVERITY_INT', 'MAX_SEVERITY_INT']] = tac_df[[
+        'CURRENT_SEVERITY_INT', 'MAX_SEVERITY_INT']].astype('int32')
+    tac_df[['SR_TIME_TO_CLOSE_DAYS_CNT']] = tac_df[[
+        'SR_TIME_TO_CLOSE_DAYS_CNT']].astype('float')
     tac_df = tac_df.drop(columns=["INCIDENT_ID"])
 
     return tac_df
 
-def get_cav_names(user,ids): 
-    
+
+def get_cav_names(user, ids):
     """Get CAV Names from CAV IDs
-    
+
     param: user - cisco e-mail address
     param: cav_ids - list of given cav ids"""
-    
+
     if ids == '':
         ids = 0
-        
+
     cnn = snowflake.connector.connect(
-    user=user,
-    authenticator='externalbrowser',
-    role='CX_CA_BUS_ANALYST_ROLE',
-    warehouse='CX_CA_RPT_WH',
-    database='CX_DB',
-    schema='CX_CA_BR',
-    account='cisco.us-east-1'
+        user=user,
+        authenticator='externalbrowser',
+        role='CX_CA_BUS_ANALYST_ROLE',
+        warehouse='CX_CA_RPT_WH',
+        database='CX_DB',
+        schema='CX_CA_BR',
+        account='cisco.us-east-1'
     )
-    
+
     cs = cnn.cursor()
     query_cav_names = f"""SELECT "CAV_ID", "CAV_NAME" FROM "CX_DB"."CX_CA_BR"."ACCOUNT_ID_LOOKUP"
         WHERE "CAV_ID" IN ({ids})
@@ -448,25 +1445,26 @@ def get_cav_names(user,ids):
     df = cs.fetchall()
     cs.close()
     cnn.close()
-    
-    cav_columns = ['CAV ID','CAV NAME']
 
-    cav_df = pd.DataFrame(df,columns=cav_columns)
-    
+    cav_columns = ['CAV ID', 'CAV NAME']
+
+    cav_df = pd.DataFrame(df, columns=cav_columns)
+
     types = cav_df.dtypes.to_dict()
-    
+
     for t in types:
         if types[t] == "int64":
-            cav_df[t]=cav_df[t].fillna(0)
+            cav_df[t] = cav_df[t].fillna(0)
         elif types[t] == "float64":
-            cav_df[t]=cav_df[t].fillna(0.0)
+            cav_df[t] = cav_df[t].fillna(0.0)
         else:
-            cav_df[t]=cav_df[t].fillna('')
+            cav_df[t] = cav_df[t].fillna('')
 
     return cav_df
 
-def get_schema(table,id_type=None):
-    
+
+def get_schema(table, id_type=None):
+
     ib_cols = [
         TableDefinition.Column('ID', SqlType.int()),
         TableDefinition.Column('Name', SqlType.text()),
@@ -492,34 +1490,48 @@ def get_schema(table,id_type=None):
         TableDefinition.Column('Product ID', SqlType.text()),
         TableDefinition.Column('Product Type', SqlType.text()),
         TableDefinition.Column('SWSS Flag', SqlType.text()),
-        TableDefinition.Column('Default Service List Price USD', SqlType.double()),
+        TableDefinition.Column(
+            'Default Service List Price USD', SqlType.double()),
         TableDefinition.Column('Item Quantity', SqlType.double()),
-        TableDefinition.Column('Annual Extended Contract Line List USD Amount', SqlType.double()),
-        TableDefinition.Column('Annual Contract Line Net USD Amount', SqlType.double()),
-        TableDefinition.Column('Annualized Extended Contract Line List USD Amount', SqlType.double()),
-        TableDefinition.Column('Annualized Contract Line Net USD Amount', SqlType.double()),
-        TableDefinition.Column('Contract Line List Price USD', SqlType.double()),
-        TableDefinition.Column('Contract Line Net Price USD', SqlType.double()),
+        TableDefinition.Column(
+            'Annual Extended Contract Line List USD Amount', SqlType.double()),
+        TableDefinition.Column(
+            'Annual Contract Line Net USD Amount', SqlType.double()),
+        TableDefinition.Column(
+            'Annualized Extended Contract Line List USD Amount', SqlType.double()),
+        TableDefinition.Column(
+            'Annualized Contract Line Net USD Amount', SqlType.double()),
+        TableDefinition.Column(
+            'Contract Line List Price USD', SqlType.double()),
+        TableDefinition.Column(
+            'Contract Line Net Price USD', SqlType.double()),
         TableDefinition.Column('Asset List Amount', SqlType.double())
-        ]
-    
+    ]
+
     coverage_cols = [
         TableDefinition.Column('ID', SqlType.text(), NOT_NULLABLE),
         TableDefinition.Column('Name', SqlType.text(), NOT_NULLABLE),
         TableDefinition.Column('Coverage', SqlType.text(), NOT_NULLABLE),
         TableDefinition.Column('Item Quantity', SqlType.int(), NOT_NULLABLE),
-        TableDefinition.Column('Asset List Amount', SqlType.double(), NOT_NULLABLE),
-        TableDefinition.Column('Asset Net Amount', SqlType.double(), NOT_NULLABLE),
-        TableDefinition.Column('Annual Contract Line Net USD Amount', SqlType.double(), NOT_NULLABLE),
-        TableDefinition.Column('Contract Line Net Price USD', SqlType.double(), NOT_NULLABLE),
-        TableDefinition.Column('Annualized Extended Contract Line List USD Amount', SqlType.double(), NOT_NULLABLE)
-        ]
-    
+        TableDefinition.Column('Asset List Amount',
+                               SqlType.double(), NOT_NULLABLE),
+        TableDefinition.Column(
+            'Asset Net Amount', SqlType.double(), NOT_NULLABLE),
+        TableDefinition.Column(
+            'Annual Contract Line Net USD Amount', SqlType.double(), NOT_NULLABLE),
+        TableDefinition.Column('Contract Line Net Price USD',
+                               SqlType.double(), NOT_NULLABLE),
+        TableDefinition.Column(
+            'Annualized Extended Contract Line List USD Amount', SqlType.double(), NOT_NULLABLE)
+    ]
+
     sw_cols = [
         TableDefinition.Column('ID', SqlType.text(), NOT_NULLABLE),
         TableDefinition.Column('Name', SqlType.text(), NOT_NULLABLE),
-        TableDefinition.Column('Sales Level 1 Name', SqlType.text(), NOT_NULLABLE),
-        TableDefinition.Column('Sales Level 2 Name', SqlType.text(), NOT_NULLABLE),
+        TableDefinition.Column('Sales Level 1 Name',
+                               SqlType.text(), NOT_NULLABLE),
+        TableDefinition.Column('Sales Level 2 Name',
+                               SqlType.text(), NOT_NULLABLE),
         TableDefinition.Column('Subscription Reference ID', SqlType.text()),
         TableDefinition.Column('Subscription Type TAV', SqlType.text()),
         TableDefinition.Column('Asset Type', SqlType.text()),
@@ -529,12 +1541,13 @@ def get_schema(table,id_type=None):
         TableDefinition.Column('Business Entity', SqlType.text()),
         TableDefinition.Column('Business Sub Entity', SqlType.text()),
         TableDefinition.Column('Contract Term End Quarter', SqlType.int()),
-        TableDefinition.Column('Contract Term End Quarter Name', SqlType.text()),
+        TableDefinition.Column(
+            'Contract Term End Quarter Name', SqlType.text()),
         TableDefinition.Column('Asset List', SqlType.double()),
         TableDefinition.Column('Asset Net', SqlType.double()),
         TableDefinition.Column('Buying Program', SqlType.text())
-        ]
-    
+    ]
+
     cir_cols = [
         TableDefinition.Column('Party ID', SqlType.int()),
         TableDefinition.Column('ACTIVE_YORN', SqlType.text(), NOT_NULLABLE),
@@ -564,14 +1577,15 @@ def get_schema(table,id_type=None):
         TableDefinition.Column('Contract Line End Date', SqlType.date()),
         TableDefinition.Column('Updated Date', SqlType.date())
     ]
-    
+
     tac_cols = [
         #TableDefinition.Column('INCIDENT_ID', SqlType.double()),
         TableDefinition.Column('INCIDENT_NUMBER', SqlType.int()),
         TableDefinition.Column('CURRENT_SEVERITY_INT', SqlType.int()),
         TableDefinition.Column('MAX_SEVERITY_INT', SqlType.int()),
         TableDefinition.Column('INCDT_CREATION_DATE', SqlType.date()),
-        TableDefinition.Column('INCDT_CRET_FISCAL_WEEK_NUM_INT', SqlType.int()),
+        TableDefinition.Column(
+            'INCDT_CRET_FISCAL_WEEK_NUM_INT', SqlType.int()),
         TableDefinition.Column('SR Creation FY Week', SqlType.text()),
         TableDefinition.Column('SR Creation FY Month', SqlType.text()),
         TableDefinition.Column('SR Creation FY Quarter', SqlType.text()),
@@ -590,11 +1604,13 @@ def get_schema(table,id_type=None):
         TableDefinition.Column('BUG_CNT', SqlType.double()),
         #TableDefinition.Column('INCIDENT_CONTACT_EMAIL', SqlType.text()),
         TableDefinition.Column('INCIDENT_STATUS', SqlType.text()),
-        TableDefinition.Column('CURRENT_ENTITLEMENT_TYPE_NAME', SqlType.text()),
+        TableDefinition.Column(
+            'CURRENT_ENTITLEMENT_TYPE_NAME', SqlType.text()),
         TableDefinition.Column('INCIDENT_CONTRACT_STATUS', SqlType.text()),
         TableDefinition.Column('CONTRACT NUMBER', SqlType.text()),
         TableDefinition.Column('CONTRACT_TYPE', SqlType.text()),
-        TableDefinition.Column('CREATION_CONTRACT_SVC_LINE_ID', SqlType.double()),
+        TableDefinition.Column(
+            'CREATION_CONTRACT_SVC_LINE_ID', SqlType.double()),
         #TableDefinition.Column('CURRENT_OWNER_CCO_ID', SqlType.text()),
         TableDefinition.Column('HW_VERSION_ID', SqlType.big_int()),
         TableDefinition.Column('SW_VERSION_ID', SqlType.big_int()),
@@ -654,7 +1670,8 @@ def get_schema(table,id_type=None):
         TableDefinition.Column('CURRENT_SEVERITY_INT', SqlType.int()),
         TableDefinition.Column('MAX_SEVERITY_INT', SqlType.int()),
         TableDefinition.Column('INCDT_CREATION_DATE', SqlType.date()),
-        TableDefinition.Column('INCDT_CRET_FISCAL_WEEK_NUM_INT', SqlType.int()),
+        TableDefinition.Column(
+            'INCDT_CRET_FISCAL_WEEK_NUM_INT', SqlType.int()),
         TableDefinition.Column('SR Creation FY Week', SqlType.text()),
         TableDefinition.Column('SR Creation FY Month', SqlType.text()),
         TableDefinition.Column('SR Creation FY Quarter', SqlType.text()),
@@ -673,11 +1690,13 @@ def get_schema(table,id_type=None):
         TableDefinition.Column('BUG_CNT', SqlType.double()),
         #TableDefinition.Column('INCIDENT_CONTACT_EMAIL', SqlType.text()),
         TableDefinition.Column('INCIDENT_STATUS', SqlType.text()),
-        TableDefinition.Column('CURRENT_ENTITLEMENT_TYPE_NAME', SqlType.text()),
+        TableDefinition.Column(
+            'CURRENT_ENTITLEMENT_TYPE_NAME', SqlType.text()),
         TableDefinition.Column('INCIDENT_CONTRACT_STATUS', SqlType.text()),
         TableDefinition.Column('CONTRACT NUMBER', SqlType.text()),
         TableDefinition.Column('CONTRACT_TYPE', SqlType.text()),
-        TableDefinition.Column('CREATION_CONTRACT_SVC_LINE_ID', SqlType.double()),
+        TableDefinition.Column(
+            'CREATION_CONTRACT_SVC_LINE_ID', SqlType.double()),
         #TableDefinition.Column('CURRENT_OWNER_CCO_ID', SqlType.text()),
         TableDefinition.Column('HW_VERSION_ID', SqlType.big_int()),
         TableDefinition.Column('SW_VERSION_ID', SqlType.big_int()),
@@ -731,7 +1750,7 @@ def get_schema(table,id_type=None):
         TableDefinition.Column('FLAG', SqlType.text()),
         TableDefinition.Column('Data Extracted Date', SqlType.date())
     ]
-    
+
     smartsheet_cols = [
         TableDefinition.Column('Row Number', SqlType.int()),
         TableDefinition.Column('Request ID', SqlType.big_int()),
@@ -756,10 +1775,11 @@ def get_schema(table,id_type=None):
         TableDefinition.Column('DA Comments', SqlType.text()),
         TableDefinition.Column('Status', SqlType.text()),
         TableDefinition.Column('Requester Name', SqlType.text()),
-        TableDefinition.Column('Parties Active Collectors', SqlType.text()), #Who should be notified on completion of Analysis
-        TableDefinition.Column('OP Status', SqlType.text())        
-        ]
-    
+        # Who should be notified on completion of Analysis
+        TableDefinition.Column('Parties Active Collectors', SqlType.text()),
+        TableDefinition.Column('OP Status', SqlType.text())
+    ]
+
     if table == 'ib':
         return ib_cols
     elif table == 'coverage':
@@ -770,17 +1790,20 @@ def get_schema(table,id_type=None):
         return cir_cols
     elif table == 'tac':
         if id_type == 'GU ID':
-            tac_cols.pop(70),tac_cols.pop(66)
-            tac_cols.insert(69,TableDefinition.Column('GLOBAL_ULTIMATE_ID', SqlType.int()))
-        else: pass
+            tac_cols.pop(70), tac_cols.pop(66)
+            tac_cols.insert(69, TableDefinition.Column(
+                'GLOBAL_ULTIMATE_ID', SqlType.int()))
+        else:
+            pass
         return tac_cols
     elif table == 'tac2':
         return tac_cols2
     elif table == 'smartsheet':
         return smartsheet_cols
-    
+
+
 def LDoS_flag(data):
-    list=[]
+    list = []
     for x in data:
         if x >= datetime.today():
             list.append('N')
@@ -789,52 +1812,54 @@ def LDoS_flag(data):
     return list
 
 # Funcion calcula el valor del IB value
-def SNTC_Oppty(df,sntc_mapping):
-   
+
+
+def SNTC_Oppty(df, sntc_mapping):
+
     try:
-        sntc_mapping = sntc_mapping.rename(columns={"Product SKU":"Product SKU "})
+        sntc_mapping = sntc_mapping.rename(
+            columns={"Product SKU": "Product SKU "})
     except:
         pass
-    sntc_mapping = sntc_mapping[["Product SKU ","SNT"]]
-    
+    sntc_mapping = sntc_mapping[["Product SKU ", "SNT"]]
+
     ib = df.copy()
     #ib['Item Quantity']=ib['Item Quantity'].astype(int)
-    
-    #Merging mapping and IB
-    merge = ib.merge(sntc_mapping,right_on="Product SKU ",left_on="Product ID",how="left")
 
-    #Transforming dates to calculate LDoS flag
-    merge['LDoS']=merge['LDoS'].apply(lambda x: str(x).replace('/','-'))    
-    merge['LDoS']=merge['LDoS'].apply(lambda x: str(x).replace('nan', '2100-01-01 00:00:00'))
-    fechas = [datetime.strptime(str(i)[:-5],'%m-%d-%Y') if len(i)<16 else datetime.fromisoformat(str(i)) for i in merge['LDoS']]
+    # Merging mapping and IB
+    merge = ib.merge(sntc_mapping, right_on="Product SKU ",
+                     left_on="Product ID", how="left")
+
+    # Transforming dates to calculate LDoS flag
+    merge['LDoS'] = merge['LDoS'].apply(lambda x: str(x).replace('/', '-'))
+    merge['LDoS'] = merge['LDoS'].apply(
+        lambda x: str(x).replace('nan', '2100-01-01 00:00:00'))
+    fechas = [datetime.strptime(str(i)[:-5], '%m-%d-%Y') if len(i) <
+              16 else datetime.fromisoformat(str(i)) for i in merge['LDoS']]
     merge['LDoS'] = fechas
-    
-    #Calculating LDoS flag column
-    merge['LDoS Flag']=LDoS_flag(merge['LDoS'])
-    
 
-    #Filtering data
-    
-    merge=merge[merge['Coverage']=='NOT COVERED']
+    # Calculating LDoS flag column
+    merge['LDoS Flag'] = LDoS_flag(merge['LDoS'])
+
+    # Filtering data
+
+    merge = merge[merge['Coverage'] == 'NOT COVERED']
 
     #merge=merge[(merge["Asset Type"]=="Hardware")]
 
-    merge=merge[(merge['Product Type']!= 'APPLIANCE') & (merge['Product Type']!='CABLE') & (merge['Product Type']!='APPSWIND') & (merge['Product Type']!='POWER') & (merge['Product Type']!='DOC')]
+    merge = merge[(merge['Product Type'] != 'APPLIANCE') & (merge['Product Type'] != 'CABLE') & (
+        merge['Product Type'] != 'APPSWIND') & (merge['Product Type'] != 'POWER') & (merge['Product Type'] != 'DOC')]
 
-    merge=merge[(merge['LDoS Flag']=='N')]
+    merge = merge[(merge['LDoS Flag'] == 'N')]
 
     #merge = merge[(merge['Business Entity Name'] != 'Other')]
 
     # Calculating IB Value
 
     merge["IB Oppty"] = merge["Item Quantity"]*merge["SNT"]/1000
-    sntc_oppty = merge.iloc[:, np.r_[0,-1]].groupby(merge.columns[0]).sum()
-    
-    if len(sntc_oppty)>0:
+    sntc_oppty = merge.iloc[:, np.r_[0, -1]].groupby(merge.columns[0]).sum()
+
+    if len(sntc_oppty) > 0:
         return sntc_oppty['IB Oppty'].sum()
     else:
         return 'N/A'
-
-
-    
-    
