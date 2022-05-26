@@ -434,16 +434,30 @@ def upload_data_to_sf(df,user):
 def Total_Recommended_Estimate_CR(uncovered_data_filtered):
     
     if len(uncovered_data_filtered) == 0 or uncovered_data_filtered.empty:
-        Recommended_Estimate='N/A'
+        Recommended_Estimate=0
     else:
         uncovered_data_filtered_Y = uncovered_data_filtered[(uncovered_data_filtered["SSPT_YORN"]=="Y")&(uncovered_data_filtered["SNTC_YORN"]=="Y")]
         uncovered_data_filtered_Y = uncovered_data_filtered_Y[['ECMU','INSTALLATION_QUANTITY','SNT','DV_GOODS_PRODUCT_CATEGORY_CD']].fillna(0)
-        uncovered_data_filtered_Y['PRICING_LIST'] = ((uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'HARDWARE')*uncovered_data_filtered_Y['SNT'] + (uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'SOFTWARE')*uncovered_data_filtered_Y['ECMU'])*uncovered_data_filtered_Y['INSTALLATION_QUANTITY']
+        uncovered_data_filtered_Y['PRICING_LIST'] = ((uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'HARDWARE')*uncovered_data_filtered_Y['SNT'] + (uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 0)*uncovered_data_filtered_Y['SNT'] + (uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'SOFTWARE')*uncovered_data_filtered_Y['ECMU'])*uncovered_data_filtered_Y['INSTALLATION_QUANTITY']
         #uncovered_data_filtered_Y['PRICING_LIST'] = ((uncovered_data_filtered_Y['ECMU'] * uncovered_data_filtered_Y['INSTALLATION_QUANTITY'])) + uncovered_data_filtered_Y['SNT']
         
         Recommended_Estimate=round(uncovered_data_filtered_Y["PRICING_LIST"].sum()/1000,1)
     
     return Recommended_Estimate
+
+def Total_Recommended_Estimate_CR_SSPT(uncovered_data_filtered):
+    
+    if len(uncovered_data_filtered) == 0 or uncovered_data_filtered.empty:
+        Recommended_Estimate_SSPT=0
+    else:
+        uncovered_data_filtered_Y = uncovered_data_filtered[(uncovered_data_filtered["SSPT_YORN"]=="Y")&(uncovered_data_filtered["SNTC_YORN"]=="Y")]
+        uncovered_data_filtered_Y = uncovered_data_filtered_Y[['Ecmus','INSTALLATION_QUANTITY','Sssnt','DV_GOODS_PRODUCT_CATEGORY_CD']].fillna(0)
+        uncovered_data_filtered_Y['PRICING_LIST'] = ((uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'HARDWARE')*uncovered_data_filtered_Y['Sssnt'] + (uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 0)*uncovered_data_filtered_Y['Sssnt'] + (uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'SOFTWARE')*uncovered_data_filtered_Y['Ecmus'])*uncovered_data_filtered_Y['INSTALLATION_QUANTITY']
+        #uncovered_data_filtered_Y['PRICING_LIST'] = ((uncovered_data_filtered_Y['ECMU'] * uncovered_data_filtered_Y['INSTALLATION_QUANTITY'])) + uncovered_data_filtered_Y['SNT']
+        
+        Recommended_Estimate_SSPT=round(uncovered_data_filtered_Y["PRICING_LIST"].sum()/1000,1)
+    
+    return Recommended_Estimate_SSPT
 
 def create_extract(name,columns,df,path):
     process_parameters = {
