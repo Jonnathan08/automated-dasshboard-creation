@@ -9,6 +9,7 @@ from datetime import datetime
 from snowflake.connector.pandas_tools import write_pandas
 
 from pathlib import Path
+#from sqlalchemy import true
 
 from tableauhyperapi import HyperProcess, Telemetry, \
     Connection, CreateMode, \
@@ -441,7 +442,7 @@ def Total_Recommended_Estimate_CR(uncovered_data_filtered):
         uncovered_data_filtered_Y['PRICING_LIST'] = ((uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'HARDWARE')*uncovered_data_filtered_Y['SNT'] + (uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 0)*uncovered_data_filtered_Y['SNT'] + (uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'SOFTWARE')*uncovered_data_filtered_Y['ECMU'])*uncovered_data_filtered_Y['INSTALLATION_QUANTITY']
         #uncovered_data_filtered_Y['PRICING_LIST'] = ((uncovered_data_filtered_Y['ECMU'] * uncovered_data_filtered_Y['INSTALLATION_QUANTITY'])) + uncovered_data_filtered_Y['SNT']
         
-        Recommended_Estimate=round(uncovered_data_filtered_Y["PRICING_LIST"].sum()/1000,1)
+        Recommended_Estimate=int(round(uncovered_data_filtered_Y["PRICING_LIST"].sum(),0))
     
     return Recommended_Estimate
 
@@ -455,9 +456,26 @@ def Total_Recommended_Estimate_CR_SSPT(uncovered_data_filtered):
         uncovered_data_filtered_Y['PRICING_LIST'] = ((uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'HARDWARE')*uncovered_data_filtered_Y['Sssnt'] + (uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 0)*uncovered_data_filtered_Y['Sssnt'] + (uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'SOFTWARE')*uncovered_data_filtered_Y['Ecmus'])*uncovered_data_filtered_Y['INSTALLATION_QUANTITY']
         #uncovered_data_filtered_Y['PRICING_LIST'] = ((uncovered_data_filtered_Y['ECMU'] * uncovered_data_filtered_Y['INSTALLATION_QUANTITY'])) + uncovered_data_filtered_Y['SNT']
         
-        Recommended_Estimate_SSPT=round(uncovered_data_filtered_Y["PRICING_LIST"].sum()/1000,1)
+        Recommended_Estimate_SSPT=int(round(uncovered_data_filtered_Y["PRICING_LIST"].sum(),0))
     
     return Recommended_Estimate_SSPT
+
+
+def Total_Initial_Estimate(uncovered_data_filtered):
+    
+    if len(uncovered_data_filtered) == 0 or uncovered_data_filtered.empty:
+        Initial_Estimate=0
+    else:
+        uncovered_data_filtered_IE = uncovered_data_filtered[(uncovered_data_filtered["LINE_STATUS"]=="MISS ATTACH 1mo - 3mo")|(uncovered_data_filtered["LINE_STATUS"]=="MISS ATTACH 3mo - 12mo")|(uncovered_data_filtered["LINE_STATUS"]=="EXPIRED 12mo - 24mo")]
+        uncovered_data_filtered_IE = uncovered_data_filtered_IE[(uncovered_data_filtered_IE["DV_GOODS_PRODUCT_CATEGORY_CD"]=="HARDWARE")|(uncovered_data_filtered_IE["DV_GOODS_PRODUCT_CATEGORY_CD"].isna()==True)]
+        uncovered_data_filtered_IE = uncovered_data_filtered_IE[(uncovered_data_filtered_IE["PF_BAND"].isna()==False)&(uncovered_data_filtered_IE["PF_BAND"]!="N/A")]
+        uncovered_data_filtered_IE = uncovered_data_filtered_IE[uncovered_data_filtered_IE["WARRANTY_TYPE"]!="Enhanced Limited Life Hardware Warranty"]
+        uncovered_data_filtered_IE = uncovered_data_filtered_IE[['ECMU','INSTALLATION_QUANTITY','SNT','DV_GOODS_PRODUCT_CATEGORY_CD']].fillna(0)
+        uncovered_data_filtered_IE['PRICING_LIST'] = ((uncovered_data_filtered_IE['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'HARDWARE')*uncovered_data_filtered_IE['SNT'] + (uncovered_data_filtered_IE['DV_GOODS_PRODUCT_CATEGORY_CD'] == 0)*uncovered_data_filtered_IE['SNT'] + (uncovered_data_filtered_IE['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'SOFTWARE')*uncovered_data_filtered_IE['ECMU'])*uncovered_data_filtered_IE['INSTALLATION_QUANTITY']
+        Initial_Estimate=int(round(uncovered_data_filtered_IE["PRICING_LIST"].sum(),0))
+    
+    return Initial_Estimate
+
 
 def create_extract(name,columns,df,path):
     process_parameters = {
