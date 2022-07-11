@@ -355,6 +355,168 @@ def get_telemetry_df2(user, savs, gus, parties, cavs):
 
     return cir_df
 
+def get_ib_data(user, ids, id_type):
+
+    
+    """Get TAC data from Snowflake by given Party ids and
+    creates a DataFrame
+
+    param: user - cisco e-mail address
+    param: sav_ids - list of given sav ids"""
+    id_type = str(id_type)
+
+    if ids == '':
+        ids = 0
+
+    cnn = snowflake.connector.connect(
+        user=user,
+        authenticator='externalbrowser',
+        role='CX_CA_BUS_ANALYST_ROLE',
+        warehouse='CX_CA_RPT_WH',
+        database='CX_DB',
+        schema='CX_CA_BR',
+        account='cisco.us-east-1'
+    )
+
+    cs = cnn.cursor()
+
+    query_ib = f"""SELECT CUSTOMER_ID,
+                    CUSTOMER_NAME,
+                    L2_SALES_TERRITORY_DESCR,
+                    COVERAGE,
+                    SERVICE_CONTRACT_NUMBER,
+                    CONTRACT_LINE_STATUS,
+                    CONTRACT_TYPE,CONTRACT_LINE_END_FISCAL_QUARTER,
+                    CONTRACT_LINE_END_FISCAL_YEAR,
+                    SHIPPED_FISCAL_YEAR,
+                    SERVICE_BRAND_CODE,
+                    OFFER_TYPE_NAME,
+                    DV_GOODS_PRODUCT_CATEGORY_CD,
+                    LAST_SUPPORT_DT,
+                    LDOS_FISCAL_QUARTER,
+                    LDOS_FISCAL_YEAR,
+                    BUSINESS_ENTITY_DESCR,
+                    SUB_BUSINESS_ENTITY_DESCR,
+                    RU_BK_PRODUCT_FAMILY_ID,
+                    BK_PRODUCT_ID,
+                    BK_PRODUCT_TYPE_ID,
+                    sum(SERVICE_MAPPED_PRICE),
+                    sum(INSTALLATION_QUANTITY),
+                    sum(ANNUAL_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT),
+                    sum(ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT),
+                    sum(ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT),
+                    sum(ANNUALIZED_CONTRACT_LINE_NET_USD_AMOUNT),
+                    sum(CONTRACT_LINE_LIST_USD_AMOUNT),
+                    sum(CORRECTED_CONTRACT_LINE_NET_USD_AMOUNT)
+                    FROM CX_DB.CX_CA_BR.BV_OE_IB_ASSET
+                    WHERE ACCOUNT_IDENTIFIER = '{id_type}'
+                    AND 
+                    CUSTOMER_ID IN ({ids})
+                    group by CUSTOMER_ID,CUSTOMER_NAME,L2_SALES_TERRITORY_DESCR,COVERAGE,
+                    SERVICE_CONTRACT_NUMBER,CONTRACT_LINE_STATUS,CONTRACT_TYPE,CONTRACT_LINE_END_FISCAL_QUARTER,
+                    CONTRACT_LINE_END_FISCAL_YEAR,SHIPPED_FISCAL_YEAR,SERVICE_BRAND_CODE,OFFER_TYPE_NAME,PRODUCT_CATEGORY_CD,DV_GOODS_PRODUCT_CATEGORY_CD,
+                    LAST_SUPPORT_DT,LDOS_FISCAL_QUARTER,LDOS_FISCAL_YEAR,BUSINESS_ENTITY_DESCR,SUB_BUSINESS_ENTITY_DESCR,
+                    RU_BK_PRODUCT_FAMILY_ID,BK_PRODUCT_ID,BK_PRODUCT_TYPE_ID
+                 """
+
+    cs.execute(query_ib)
+    df = cs.fetchall()
+    cs.close()
+    cnn.close()
+
+    # CURRENT_OWNER_CCO_ID
+    # INCIDENT_CONTACT_EMAIL  ## Deleted from the view made by Facundo
+
+    ib_columns = ['CUSTOMER_ID','CUSTOMER_NAME','L2_SALES_TERRITORY_DESCR',
+                'COVERAGE','SERVICE_CONTRACT_NUMBER','CONTRACT_LINE_STATUS',
+                'CONTRACT_TYPE','CONTRACT_LINE_END_FISCAL_QUARTER',
+                'CONTRACT_LINE_END_FISCAL_YEAR',
+                'SHIPPED_FISCAL_YEAR',
+                'SERVICE_BRAND_CODE',
+                'OFFER_TYPE_NAME',
+                'DV_GOODS_PRODUCT_CATEGORY_CD',
+                'LAST_SUPPORT_DT',
+                'LDOS_FISCAL_QUARTER',
+                'LDOS_FISCAL_YEAR',
+                'BUSINESS_ENTITY_DESCR',
+                'SUB_BUSINESS_ENTITY_DESCR',
+                'RU_BK_PRODUCT_FAMILY_ID',
+                'BK_PRODUCT_ID',
+                'BK_PRODUCT_TYPE_ID',
+                'SERVICE_MAPPED_PRICE',
+                'INSTALLATION_QUANTITY',
+                'ANNUAL_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT',
+                'ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT',
+                'ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT',
+                'ANNUALIZED_CONTRACT_LINE_NET_USD_AMOUNT',
+                'CONTRACT_LINE_LIST_USD_AMOUNT',
+                'CORRECTED_CONTRACT_LINE_NET_USD_AMOUNT']
+
+    ib_df = pd.DataFrame(df, columns=ib_columns)
+
+    #types = tac_df.dtypes.to_dict()
+
+    return ib_df
+
+def get_coverage_data(user, ids, id_type):
+
+    """Get Coverage data from Snowflake by given Identifier type
+
+    param: user - cisco e-mail address
+    param: sav_ids - list of given sav ids"""
+
+    if ids == '':
+        ids = 0
+
+    cnn = snowflake.connector.connect(
+        user=user,
+        authenticator='externalbrowser',
+        role='CX_CA_BUS_ANALYST_ROLE',
+        warehouse='CX_CA_RPT_WH',
+        database='CX_DB',
+        schema='CX_CA_BR',
+        account='cisco.us-east-1'
+    )
+
+    cs = cnn.cursor()
+
+    query_coverage = f"""SELECT CUSTOMER_ID,
+                    CUSTOMER_NAME,
+                    COVERAGE,
+                    sum(INSTALLATION_QUANTITY),
+                    sum(PRODUCT_NET_PRICE),
+                    sum(ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT),
+                    sum(CORRECTED_CONTRACT_LINE_NET_USD_AMOUNT),
+                    sum(ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT)
+                    FROM CX_DB.CX_CA_BR.BV_OE_IB_ASSET
+                    WHERE ACCOUNT_IDENTIFIER = '{id_type}'
+                    AND 
+                    CUSTOMER_ID IN ({ids})
+                    group by CUSTOMER_ID,CUSTOMER_NAME,COVERAGE
+                 """
+
+    cs.execute(query_coverage)
+    df = cs.fetchall()
+    cs.close()
+    cnn.close()
+
+    # CURRENT_OWNER_CCO_ID
+    # INCIDENT_CONTACT_EMAIL  ## Deleted from the view made by Facundo
+
+    coverage_columns = ['CUSTOMER_ID','CUSTOMER_NAME',
+                        'COVERAGE',
+                        'INSTALLATION_QUANTITY',
+                        'PRODUCT_NET_PRICE',
+                        'ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT',
+                        'CORRECTED_CONTRACT_LINE_NET_USD_AMOUNT',
+                        'ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT',
+                        ]
+
+    coverage_df = pd.DataFrame(df, columns=coverage_columns)
+
+    #types = tac_df.dtypes.to_dict()
+
+    return coverage_df
 
 def get_dna_df(user, savs, gus, parties, cavs):
     """Get telemetry data from Snowflake by given Party ids and
@@ -1322,7 +1484,6 @@ def get_dna_df(user, savs, gus, parties, cavs):
 
     return dna_df
 
-
 def get_tac_df_new(user, ids, id_type):
     """Get TAC data from Snowflake by given Party ids and
     creates a DataFrame
@@ -1840,10 +2001,9 @@ def SNTC_Oppty(df, sntc_mapping):
 
     # Transforming dates to calculate LDoS flag
     merge['LDoS'] = merge['LDoS'].apply(lambda x: str(x).replace('/', '-'))
-    merge['LDoS'] = merge['LDoS'].apply(
-        lambda x: str(x).replace('nan', '2100-01-01 00:00:00'))
-    fechas = [datetime.strptime(str(i)[:-5], '%m-%d-%Y') if len(i) <
-              16 else datetime.fromisoformat(str(i)) for i in merge['LDoS']]
+    merge['LDoS'] = merge['LDoS'].apply(lambda x: str(x).replace('nan', '2100-01-01 00:00:00'))
+    merge['LDoS'] = merge['LDoS'].replace('', '2100-01-01 00:00:00')
+    fechas = [datetime.strptime(str(i)[:-5], '%m-%d-%Y') if len(i) < 16 else datetime.fromisoformat(str(i)) for i in merge['LDoS']]
     merge['LDoS'] = fechas
 
     # Calculating LDoS flag column
@@ -1889,10 +2049,10 @@ def set_datasource(df,type,folder_path,contract_types_list,
                     'Best Site Sales Level 2 Name', 'Coverage', 'Contract Number', 'Covered Line Status', 'Contract Type', 'Contract Line End Quarter',
                     'Contract Line End Fiscal Year', 'Instance Shipped Fiscal Year', 'Service Brand Code', 'Offer Type Name', 'Asset Type',
                     'LDoS', 'LDoS Fiscal Quarter', 'LDoS FY', 'Business Entity Name', 'Sub Business Entity Name', 'Product Family',
-                    'Product ID', 'Product Type', 'SWSS Flag', 'Default Service List Price USD', 'Item Quantity',
+                    'Product ID', 'Product Type', 'Default Service List Price USD', 'Item Quantity',
                     'Annual Extended Contract Line List USD Amount', 'Annual Contract Line Net USD Amount',
                     'Annualized Extended Contract Line List USD Amount', 'Annualized Contract Line Net USD Amount',
-                    'Contract Line List Price USD', 'Contract Line Net Price USD', 'Asset List Amount']
+                    'Contract Line List Price USD', 'Contract Line Net Price USD']
 
         dataframe.columns = ib_cols
 
@@ -1919,7 +2079,7 @@ def set_datasource(df,type,folder_path,contract_types_list,
                             'Product Family': str,
                             'Product ID': str,
                             'Product Type': str,
-                            'SWSS Flag': str,
+                            #'SWSS Flag': str,
                             'Default Service List Price USD': float,
                             'Item Quantity': float,
                             'Annual Extended Contract Line List USD Amount': float,
@@ -1927,8 +2087,8 @@ def set_datasource(df,type,folder_path,contract_types_list,
                             'Annualized Extended Contract Line List USD Amount': float,
                             'Annualized Contract Line Net USD Amount': float,
                             'Contract Line List Price USD': float,
-                            'Contract Line Net Price USD': float,
-                            'Asset List Amount': float})
+                            'Contract Line Net Price USD': float})
+                            #'Asset List Amount': float})
 
         dataframe['LDoS'] = dataframe['LDoS'].apply(lambda x: datetime.strptime(str(x) , '%Y-%m-%d %H:%M:%S') if pd.notna(x) else x)
 
@@ -1947,8 +2107,7 @@ def set_datasource(df,type,folder_path,contract_types_list,
 
     elif type == 'coverage':
 
-        coverage_cols = ['ID', 'Name', 'Coverage', 'Item Quantity',
-                        'Asset List Amount', 'Asset Net Amount', 'Annual Contract Line Net USD Amount',
+        coverage_cols = ['ID', 'Name', 'Coverage', 'Item Quantity', 'Asset Net Amount', 'Annual Contract Line Net USD Amount',
                         'Contract Line Net Price USD', 'Annualized Extended Contract Line List USD Amount'
         ]
 
@@ -1959,7 +2118,7 @@ def set_datasource(df,type,folder_path,contract_types_list,
             'Name': str,
             'Coverage': str,
             'Item Quantity': int,
-            'Asset List Amount': float,
+            #'Asset List Amount': float,
             'Asset Net Amount': float,
             'Annual Contract Line Net USD Amount': float,
             'Contract Line Net Price USD': float,
@@ -2371,7 +2530,7 @@ def SSPT_Oppty(IB):
         SP_Oppty1 = round(((merge2['Uplift Recommended SL $'].sum()) - (merge2['Annualized Extended Contract Line List USD Amount'].sum()))/1000,1)
 
 
-        return SP_Oppty1, (merge2['Uplift Recommended SL $'].sum()), (merge2['Annualized Extended Contract Line List USD Amount'].sum()), merge2
+        return SP_Oppty1
 
 
 
