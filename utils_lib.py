@@ -1,4 +1,6 @@
+from ast import NotIn
 import warnings
+from matplotlib.pyplot import axis
 
 import snowflake.connector
 import pandas as pd
@@ -1865,3 +1867,593 @@ def SNTC_Oppty(df, sntc_mapping):
         return sntc_oppty['IB Oppty'].sum()
     else:
         return 'N/A'
+
+def set_datasource(df,type,folder_path,contract_types_list,
+                    success_track_pricing_list,sspt_pricing_list_eligibleSSPT,
+                    sspt_pricing_list_outputTable,sntc_pricing_list,htec_contract_types_htec,
+                    htec_contract_types_swss,combined_services,product_banding):
+
+    dataframe = df.copy()
+    ## --------------------------------------------- IB
+    if type == 'ib':
+
+        ib_cols = ['ID', 'Name', 'Best Site ID', 'Best Site Customer Name',
+                    'Best Site Sales Level 2 Name', 'Coverage', 'Contract Number', 'Covered Line Status', 'Contract Type', 'Contract Line End Quarter',
+                    'Contract Line End Fiscal Year', 'Instance Shipped Fiscal Year', 'Service Brand Code', 'Offer Type Name', 'Asset Type',
+                    'LDoS', 'LDoS Fiscal Quarter', 'LDoS FY', 'Business Entity Name', 'Sub Business Entity Name', 'Product Family',
+                    'Product ID', 'Product Type', 'SWSS Flag', 'Default Service List Price USD', 'Item Quantity',
+                    'Annual Extended Contract Line List USD Amount', 'Annual Contract Line Net USD Amount',
+                    'Annualized Extended Contract Line List USD Amount', 'Annualized Contract Line Net USD Amount',
+                    'Contract Line List Price USD', 'Contract Line Net Price USD', 'Asset List Amount']
+
+        dataframe.columns = ib_cols
+
+        dataframe.astype({'ID': int,
+                            'Name': str,
+                            'Best Site ID': float,  # double
+                            'Best Site Customer Name': str,
+                            'Best Site Sales Level 2 Name': str,
+                            'Coverage': str,
+                            'Contract Number': int,  # big_int
+                            'Covered Line Status': str,
+                            'Contract Type': str,
+                            'Contract Line End Quarter': int,
+                            'Contract Line End Fiscal Year': int,
+                            'Instance Shipped Fiscal Year': int,
+                            'Service Brand Code': str,
+                            'Offer Type Name': str,
+                            'Asset Type': str,
+                            #'LDoS':datetime,
+                            'LDoS Fiscal Quarter': str,
+                            'LDoS FY': int,
+                            'Business Entity Name': str,
+                            'Sub Business Entity Name': str,
+                            'Product Family': str,
+                            'Product ID': str,
+                            'Product Type': str,
+                            'SWSS Flag': str,
+                            'Default Service List Price USD': float,
+                            'Item Quantity': float,
+                            'Annual Extended Contract Line List USD Amount': float,
+                            'Annual Contract Line Net USD Amount': float,
+                            'Annualized Extended Contract Line List USD Amount': float,
+                            'Annualized Contract Line Net USD Amount': float,
+                            'Contract Line List Price USD': float,
+                            'Contract Line Net Price USD': float,
+                            'Asset List Amount': float})
+
+        dataframe['LDoS'] = dataframe['LDoS'].apply(lambda x: datetime.strptime(str(x) , '%Y-%m-%d %H:%M:%S') if pd.notna(x) else x)
+
+        dataframe = dataframe.merge(contract_types_list, how='left', left_on='Contract Type',right_on='Contract Type', suffixes=('', ' (SNTCSolutionSupport)'))
+        dataframe = dataframe.merge(success_track_pricing_list, how='left', left_on='Product ID',right_on='Product SKU', suffixes=('', ' (Success Track PIDs)'))
+        dataframe = dataframe.merge(sspt_pricing_list_eligibleSSPT, how='left',left_on='Product ID', right_on='Product SKU', suffixes=('', ' (Eligible SSPT)'))
+        dataframe = dataframe.merge(sspt_pricing_list_outputTable, how='left',left_on='Product ID', right_on='Product SKU', suffixes=('', ' (Output Table)'))
+        dataframe = dataframe.merge(sntc_pricing_list, how='left', left_on='Product ID',right_on='Product SKU ', suffixes=('', ' (Output)'))
+        dataframe = dataframe.merge(htec_contract_types_swss, how='left',left_on='Contract Type', right_on='GSP', suffixes=('', ' (SWSS)'))
+        dataframe = dataframe.merge(htec_contract_types_htec, how='left',left_on='Contract Type', right_on='GSP', suffixes=('', ' (HTEC)'))
+        dataframe = dataframe.merge(combined_services, how='left',left_on='Contract Type', right_on='Combined Services Service Level')
+        dataframe = dataframe.merge(product_banding, how='left', left_on='Product Family', right_on='INTERNAL_BE_PRODUCT_FAMILY')
+        dataframe.to_csv(folder_path, index=False)
+
+    ## --------------------------------------------- Coverage
+
+    elif type == 'coverage':
+
+        coverage_cols = ['ID', 'Name', 'Coverage', 'Item Quantity',
+                        'Asset List Amount', 'Asset Net Amount', 'Annual Contract Line Net USD Amount',
+                        'Contract Line Net Price USD', 'Annualized Extended Contract Line List USD Amount'
+        ]
+
+        dataframe.columns = coverage_cols
+
+        dataframe.astype({
+            'ID': str,
+            'Name': str,
+            'Coverage': str,
+            'Item Quantity': int,
+            'Asset List Amount': float,
+            'Asset Net Amount': float,
+            'Annual Contract Line Net USD Amount': float,
+            'Contract Line Net Price USD': float,
+            'Annualized Extended Contract Line List USD Amount': float
+        })
+
+        dataframe.to_csv(folder_path, index=False)
+
+    ## --------------------------------------------- SW
+    elif type == 'sw':
+
+        sw_cols = [
+            'ID', 'Name', 'Sales Level 1 Name', 'Sales Level 2 Name', 'Subscription Reference ID', 'Subscription Type TAV',
+            'Asset Type', 'Product Family', 'Product ID', 'Product Description', 'Business Entity', 'Business Sub Entity',
+            'Contract Term End Quarter', 'Contract Term End Quarter Name', 'Asset List', 'Asset Net', 'Buying Program',
+        ]
+
+        dataframe.columns = sw_cols
+
+        dataframe.astype({
+            'ID': str,
+            'Name': str,
+            'Sales Level 1 Name': str,
+            'Sales Level 2 Name': str,
+            'Subscription Reference ID': str,
+            'Subscription Type TAV': str,
+            'Asset Type': str,
+            'Product Family': str,
+            'Product ID': str,
+            'Product Description': str,
+            'Business Entity': str,
+            'Business Sub Entity': str,
+            'Contract Term End Quarter': int,
+            'Contract Term End Quarter Name': str,
+            'Asset List': float,
+            'Asset Net': float,
+            'Buying Program': str
+        })
+
+        dataframe.to_csv(folder_path, index=False)
+
+    ## --------------------------------------------- TAC
+
+    elif type == 'tac':
+
+        tac_cols = [
+            'INCIDENT_NUMBER', 'CURRENT_SEVERITY_INT', 'MAX_SEVERITY_INT', 'INCDT_CREATION_DATE', 'INCDT_CRET_FISCAL_WEEK_NUM_INT',
+            'SR Creation FY Week', 'SR Creation FY Month', 'SR Creation FY Quarter', 'SR Creation Fiscal Year', 'CLOSED_DATE',
+            'INCDT_CLOSED_FISCAL_MONTH_NM', 'INCDT_CLOSED_FISCAL_QTR_NM', 'INCDT_CLOSED_FISCAL_YEAR', 'SR_TIME_TO_CLOSE_DAYS_CNT',
+            'CURRENT_SERIAL_NUMBER', 'COMPLEXITY_DESCR', 'INITIAL_PROBLEM_CODE', 'OUTAGE_FLAG', 'ENTRY_CHANNEL_NAME', 'REQUEST_TYPE_NAME',
+            'BUG_CNT', 'INCIDENT_STATUS', 'CURRENT_ENTITLEMENT_TYPE_NAME', 'INCIDENT_CONTRACT_STATUS', 'CONTRACT NUMBER', 'CONTRACT_TYPE',
+            'CREATION_CONTRACT_SVC_LINE_ID', 'HW_VERSION_ID', 'SW_VERSION_ID', 'TAC_PRODUCT_SW_KEY', 'UPDATED_COT_TECH_KEY', 'INCIDENT_TYPE',
+            'PROBLEM_CODE', 'RESOLUTION_CODE', 'PART_NUMBER', 'SOLUTION_CNT', 'ERP_FAMILY', 'ERP_PLATFORM_NAME', 'TAC_PRODUCT_HW_KEY',
+            'TAC_HW_PLATFORM_NAME', 'TECH_NAME', 'BUSINESS_UNIT_CODE', 'HYBRID_PRODUCT_FAMILY', 'SUB_TECH_NAME', 'SR_PRODUCT_ID', 'UNDERLYING_CAUSE_NAME',
+            'UNDERLYING_CAUSE_DESCRIPTION', 'CASE_NUMBER', 'B2B_FLAG', 'TECH_ID', 'SUB_TECH_ID', 'SW_VERSION_ACT_ID', 'SW_VERSION_NAME', 'VALID_SR_FILTER_FLAG',
+            'CUSTOMER_VERTICAL_CD', 'CUSTOMER_MARKET_SEGMENT_CD', 'ISO_COUNTRY_CD', 'Initial Time to Resolution', 'Final Time to Resolution', 'SRC_DEL_FLG',
+            'Business Ownership Time', 'Customer Ownership Time', 'Other Ownership Time', 'Delivery Ownership Time', 'CUSTOMER_NAME', 'PARTY ID', 'PARTY NAME', 'ID',
+            'SERVICE_SUBGROUP_DESC', 'SERVICE_LEVLE_CODE', 'SERVICE_PROGRAM', 'SERVICE_BRAND', 'SR_TECHNOLOGY', 'SR_SUB_TECHNOLOGY', 'BE_INT', 'SUB_BE_INT',
+            'FLAG', 'Data Extracted Date'
+        ]
+
+        dataframe.columns = tac_cols
+
+        dataframe.astype({
+            'INCIDENT_NUMBER': int,
+            'CURRENT_SEVERITY_INT': int,
+            'MAX_SEVERITY_INT': int,
+            #'INCDT_CREATION_DATE', SqlType.date()),
+            'INCDT_CRET_FISCAL_WEEK_NUM_INT': int,
+            'SR Creation FY Week': str,
+            'SR Creation FY Month': str,
+            'SR Creation FY Quarter': str,
+            'SR Creation Fiscal Year': int,
+            #'CLOSED_DATE', SqlType.date()),
+            'INCDT_CLOSED_FISCAL_MONTH_NM': str,
+            'INCDT_CLOSED_FISCAL_QTR_NM': str,
+            'INCDT_CLOSED_FISCAL_YEAR': int,
+            'SR_TIME_TO_CLOSE_DAYS_CNT': float,
+            'CURRENT_SERIAL_NUMBER': str,
+            'COMPLEXITY_DESCR': str,
+            'INITIAL_PROBLEM_CODE': str,
+            'OUTAGE_FLAG': str,
+            'ENTRY_CHANNEL_NAME': str,
+            'REQUEST_TYPE_NAME': str,
+            'BUG_CNT': float,
+            #'INCIDENT_CONTACT_EMAIL':str,
+            'INCIDENT_STATUS': str,
+            'CURRENT_ENTITLEMENT_TYPE_NAME': str,
+            'INCIDENT_CONTRACT_STATUS': str,
+            'CONTRACT NUMBER': str,
+            'CONTRACT_TYPE': str,
+            'CREATION_CONTRACT_SVC_LINE_ID': float,
+            #'CURRENT_OWNER_CCO_ID':str,
+            'HW_VERSION_ID': int,  # big_int
+            'SW_VERSION_ID': int,  # big_int
+            'TAC_PRODUCT_SW_KEY': int,
+            'UPDATED_COT_TECH_KEY': int,
+            'INCIDENT_TYPE': str,
+            'PROBLEM_CODE': str,
+            'RESOLUTION_CODE': str,
+            'PART_NUMBER': str,
+            'SOLUTION_CNT': str,
+            'ERP_FAMILY': str,
+            'ERP_PLATFORM_NAME': str,
+            'TAC_PRODUCT_HW_KEY': int,
+            'TAC_HW_PLATFORM_NAME': str,
+            'TECH_NAME': str,
+            'BUSINESS_UNIT_CODE': str,
+            'HYBRID_PRODUCT_FAMILY': str,
+            'SUB_TECH_NAME': str,
+            'SR_PRODUCT_ID': str,
+            'UNDERLYING_CAUSE_NAME': str,
+            'UNDERLYING_CAUSE_DESCRIPTION': str,
+            'CASE_NUMBER': int,
+            'B2B_FLAG': str,
+            'TECH_ID': int,
+            'SUB_TECH_ID': int,
+            'SW_VERSION_ACT_ID': float,
+            'SW_VERSION_NAME': str,
+            'VALID_SR_FILTER_FLAG': str,
+            'CUSTOMER_VERTICAL_CD': str,
+            'CUSTOMER_MARKET_SEGMENT_CD': str,
+            'ISO_COUNTRY_CD': str,
+            'Initial Time to Resolution': float,
+            'Final Time to Resolution': float,
+            'SRC_DEL_FLG': str,
+            'Business Ownership Time': float,
+            'Customer Ownership Time': float,
+            'Other Ownership Time': float,
+            'Delivery Ownership Time': float,
+            'CUSTOMER_NAME': str,
+            'PARTY ID': int,
+            'PARTY NAME': str,
+            'ID': int,
+            'SERVICE_SUBGROUP_DESC': str,
+            'SERVICE_LEVLE_CODE': str,
+            'SERVICE_PROGRAM': str,
+            'SERVICE_BRAND': str,
+            'SR_TECHNOLOGY': str,
+            'SR_SUB_TECHNOLOGY': str,
+            'BE_INT': str,
+            'SUB_BE_INT': str,
+            'FLAG': str,
+            #'Data Extracted Date', SqlType.date())
+        })
+
+        dataframe['INCDT_CREATION_DATE'] = dataframe['INCDT_CREATION_DATE'].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S') if pd.notna(x) else x)
+        dataframe['CLOSED_DATE'] = dataframe['CLOSED_DATE'].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S') if pd.notna(x) else x)
+        dataframe['Data Extracted Date'] = dataframe['Data Extracted Date'].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S') if pd.notna(x) else x)
+
+        dataframe = dataframe.merge(product_banding, how='left', left_on='HYBRID_PRODUCT_FAMILY', right_on='INTERNAL_BE_PRODUCT_FAMILY')
+        dataframe = dataframe.merge(contract_types_list, how='left', left_on='CONTRACT_TYPE', right_on='Contract Type')
+        dataframe = dataframe.merge(success_track_pricing_list, how='left', left_on='SR_PRODUCT_ID', right_on='Product SKU')
+
+        dataframe.to_csv(folder_path, index=False)
+
+    ## --------------------------------------------- CIR
+
+    elif type == 'cir':
+
+        cir_cols = [
+            'Party ID', 'ACTIVE_YORN', 'Customer', 'Equipment Type Description', 'Appliance ID', 'Inventory',
+            'Collection Date', 'Imported By', 'Product ID', 'Product Family', 'Business Entity', 'Sub Business Entity',
+            'Business Entity Description', 'PF', 'Product Description', 'Equipment Type', 'Product Type', 'Serial Number',
+            'Last Date of Support', 'Alert URL', 'Contract Number', 'Contract Status', 'Contract Lines Status', 'Service Program',
+            'Contract End Date', 'Contract Line End Date', 'ACCOUNT_ID', 'ID', 'Updated Date'
+        ]
+
+        dataframe.columns = cir_cols
+
+        dataframe.astype({
+            'Party ID': int,
+            'ACTIVE_YORN': str,
+            'Customer': str,
+            'Equipment Type Description': str,
+            'Appliance ID': str,
+            'Inventory': str,
+            #'Collection Date', SqlType.date()),
+            'Imported By': str,
+            'Product ID': str,
+            'Product Family': str,
+            'Business Entity': str,
+            'Sub Business Entity': str,
+            'Business Entity Description': str,
+            'PF': str,
+            'Product Description': str,
+            'Equipment Type': float,
+            'Product Type': str,
+            'Serial Number': str,
+            #'Last Date of Support', SqlType.date()),
+            'Alert URL': str,
+            'Contract Number': str,
+            'Contract Status': str,
+            'Contract Lines Status': str,
+            'Service Program': str,
+            #'Contract End Date', SqlType.date()),
+            #'Contract Line End Date', SqlType.date()),
+            'ACCOUNT_ID': str,
+            'ID': float,
+            #'Updated Date', SqlType.date())
+        })
+
+        dataframe['Collection Date'] = dataframe['Collection Date'].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S') if pd.notna(x) else x)
+        dataframe['Last Date of Support'] = dataframe['Last Date of Support'].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S') if pd.notna(x) else x)
+        dataframe['Contract End Date'] = dataframe['Contract End Date'].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S') if pd.notna(x) else x)
+        dataframe['Contract Line End Date'] = dataframe['Contract Line End Date'].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S') if pd.notna(x) else x)
+        dataframe['Updated Date'] = dataframe['Updated Date'].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S') if pd.notna(x) else x)
+
+        dataframe = dataframe.merge(success_track_pricing_list, how='left', left_on='Product ID', right_on='Product SKU', suffixes=('', ' (Success Track PIDs)'))
+        dataframe = dataframe.merge(sspt_pricing_list_eligibleSSPT, how='left', left_on='Product ID', right_on='Product SKU', suffixes=('', ' (Eligible SSPT)'))
+        dataframe = dataframe.merge(sspt_pricing_list_outputTable, how='left', left_on='Product ID', right_on='Product SKU', suffixes=('', ' (Output Table)'))
+        dataframe = dataframe.merge(sntc_pricing_list, how='left', left_on='Product ID', right_on='Product SKU ', suffixes=('', ' (Output)'))
+        dataframe = dataframe.merge(product_banding, how='left', left_on='Product Family', right_on='INTERNAL_BE_PRODUCT_FAMILY')
+        
+        dataframe.to_csv(folder_path, index=False)
+
+    return dataframe
+
+
+def LDoS_flag(data):
+    list=[]
+    for x in data:
+        if x >= datetime.today():
+            list.append('N')
+        else:
+            list.append('Y')
+    return list
+    
+def SSPT_Oppty(IB):
+    '''
+    La funcion recibe la ruta de un archivo excel y calcula el IB value
+    entradas:
+        path: Ruta del archivo.
+    salidas:
+        
+    '''
+
+    #Leyendo archivo de IB
+    merge = IB
+
+    if len(merge) == 0:
+        return 'N/A'
+    else:
+
+        #Transformando las fechas para calcular la columna LDos flag
+        merge['LDoS']=merge['LDoS'].apply(lambda x: str(x).replace('/','-'))    
+        merge['LDoS']=merge['LDoS'].apply(lambda x: str(x).replace('NaT', '2100-01-01 00:00:00'))
+        merge['LDoS']=merge['LDoS'].apply(lambda x: str(x).replace('None', '2100-01-01 00:00:00'))
+        fechas = [datetime.strptime(str(i)[:-5],'%m-%d-%Y') if len(i)<16 else datetime.fromisoformat(str(i)) for i in merge['LDoS']]
+        merge['LDoS'] = fechas
+
+        #Calculando columna LDos flag
+        merge['LDoS Flag']=''
+        merge['LDoS Flag']= LDoS_flag( merge['LDoS'])
+        #merge[['LDoS','LDoS Flag']][merge['LDoS Flag']=='N']
+
+        def select_data_to_display(LDoS_flag,cover_lin_status,eligible,coverage):
+            value = ''
+            if (LDoS_flag =='Y') & (cover_lin_status != 'TERMINATED') & (eligible=='YES') & (coverage=='NOT COVERED'):
+                value='Uncovered Opportunity'
+            elif  (eligible=='YES') & (coverage=='COVERED'):
+                value='Covered Opportunity'
+            else:
+                value = 'Uncovered IB to be Excluded'
+
+            return value
+
+        merge['Select data to Display'] = merge[['LDoS Flag','Covered Line Status','Eligible','Coverage']].apply(lambda x: select_data_to_display(x[0],x[1],x[2],x[3]),axis=1)
+
+        #Ejecutando los filtros a la tabla
+
+
+        merge2=merge[(merge['Select data to Display'] == 'Covered Opportunity')]
+        merge3=merge[(merge['Select data to Display'] == 'Uncovered Opportunity')]
+
+        merge=pd.concat([merge2,merge3])
+
+        merge=merge[merge['Coverage']=='COVERED']
+
+        merge4=merge[(merge['SNTC SSPT Offer Flag']== 'CISCO SWSS')]
+        merge5=merge[(merge['SNTC SSPT Offer Flag']=='Combined Services')]
+        merge6=merge[(merge['SNTC SSPT Offer Flag']=='Partner Support')]
+        merge7=merge[(merge['SNTC SSPT Offer Flag']=='Smartnet Total Care')]
+        merge8=merge[(merge['SNTC SSPT Offer Flag']=='SP Base')]
+        merge9=merge[(merge['SNTC SSPT Offer Flag']=='SS PLUS SWSS')] 
+        merge11=merge[(merge['SNTC SSPT Offer Flag']=='TELEPRESENCE CUSTOMERS')]
+
+        merge=pd.concat([merge4,merge5,merge6,merge7,merge8,merge9,merge11])
+
+        #filtro product banding
+        merge12=merge[merge["ADJUSTED_CATEGORY"]=='High']
+        merge13=merge[merge["ADJUSTED_CATEGORY"]=='Medium']
+        
+        merge=pd.concat([merge12,merge13])
+
+        #filtro upsell to sspt
+        merge=merge[merge['Convertsto']!=0]
+
+        #Success Track: All
+        #Arquitecture: All
+        #Product Family: All
+
+        # Calculando - CS Multiplier SL
+        merge['CS Multiplier SL'] = ''
+        merge = merge.reset_index()
+
+        def service_level(ib):
+            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSS2P']].apply(lambda x: x[2] if x[0] == '24x7x2' else x[1], axis=1)
+            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSC2P']].apply(lambda x: x[2] if x[0] == '24x7x2OS' else x[1], axis=1)
+            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSNP']].apply(lambda x: x[2] if x[0] == '24x7x4' else x[1], axis=1)
+            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSC4P']].apply(lambda x: x[2] if x[0] == '24x7x4OS' else x[1], axis=1)
+            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSNE']].apply(lambda x: x[2] if x[0] == '8x5x4' else x[1], axis=1)
+            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSC4S']].apply(lambda x: x[2] if x[0] == '8x5x4OS' else x[1], axis=1)
+            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSNT']].apply(lambda x: x[2] if x[0] == 'NBD' else x[1], axis=1) 
+            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSCS']].apply(lambda x: x[2] if x[0] == '8x5xNDBOS' else x[1], axis=1)       
+            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSDR7']].apply(lambda x: x[2] if x[0] == 'DR 24x7x4OS' else x[1], axis=1)
+            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSDR5']].apply(lambda x: x[2] if x[0] == 'DR 8x5xNDBOS' else x[1], axis=1)
+            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSW']].apply(lambda x: x[2] if x[0] == 'SNTC NO RMA' else x[1], axis=1)
+            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSW']].apply(lambda x: 0 if x[0] not in ['24x7x2','24x7x2OS','24x7x4','24x7x4OS','8x5x4','8x5x4OS','NBD','8x5xNDBOS','DR 24x7x4OS','DR 8x5xNDBOS','SNTC NO RMA'] else x[1], axis=1)
+
+        service_level(merge)
+
+        # Calculando - CS SSPT (Multiplier)
+        merge['CS SSPT (Multiplier)'] = 0
+        merge['CS SSPT (Multiplier)'] = merge[['Uplift','CS SSPT (Multiplier)','CS Multiplier SL','Item Quantity','Multiplier']].apply(lambda x: 0 if x[0] == '' else x[2]*x[3]*x[4], axis=1)
+
+        # Calculando - Uplift Recommended SL $
+
+        merge['Uplift Recommended SL $']= ''
+        lista = ['SNCO','PSUP','C2P','3C4P','C4P','C4S','CS','UCSD5','UCSD7','S2P','SNTE','SNTP','3SNT','5SNT','SNT','PSRT','PSUT','LSNT']
+        lista2 = ['SPAR1','SPAR2','SPAR3','SPAR4','SPC2P','SBAR1','SPCS']
+        lista3 = ['ECDN','ECDO']
+
+        merge = merge.reset_index()
+
+        def uplift_recommended_sl(contract_type,item_quantity,ssc2p,ssc4p,ssc4s,sscs,ssdr5,
+                            ssdr7,sss2p,sssne,sssnp,sssnt,sssw,ecmus,sntc_sspt_offer_flag,cs_sspt_multiplier,
+                            ssnco,sssnc):
+            value = 0
+
+            if (contract_type == 'C2P') & (ssc2p != 0):
+                value = ssc2p*item_quantity
+            elif (contract_type == '3C4P') & (ssc4p != 0):
+                        value = ssc4p*item_quantity    
+            elif (contract_type == 'C4P') & (ssc4p != 0):
+                value = ssc4p*item_quantity
+            elif (contract_type == 'C4S') & (ssc4s != 0):
+                value = ssc4s*item_quantity
+            elif (contract_type == 'CS') & (sscs != 0):
+                value = sscs*item_quantity
+            elif (contract_type == 'UCSD5') & (ssdr5 != 0):
+                value = ssdr5*item_quantity    
+            elif (contract_type == 'UCSD7') & (ssdr7 != 0):
+                value = ssdr7*item_quantity
+            elif (contract_type == 'S2P') & (sss2p != 0):
+                value = sss2p*item_quantity
+            elif (contract_type == 'SNTE') & (sssne != 0):
+                value = sssne*item_quantity
+            elif (contract_type == '3SNTP') & (sssnp != 0):
+                value = sssnp*item_quantity
+            elif (contract_type == 'SNTP') & (sssnp != 0):
+                value = sssnp*item_quantity
+            elif (contract_type == '5SNTP') & (sssnp != 0):
+                value = sssnp*item_quantity
+            elif (contract_type == 'SW') & (sssnt != 0):
+                value = sssnt*item_quantity   
+            elif (contract_type == 'SW') & (sssw != 0):
+                value = sssw*item_quantity
+            elif (contract_type == 'ECMU') & (ecmus != 0):
+                value = ecmus*item_quantity
+            elif (sntc_sspt_offer_flag == 'Combined Services'):
+                value = cs_sspt_multiplier   
+            elif (contract_type == 'PSUP') & (sssnp != 0):
+                value = sssnp*item_quantity    
+            elif (contract_type == 'SNCO') & (ssnco != 0):
+                value = ssnco*item_quantity 
+            elif (contract_type == 'SNC') & (sssnc != 0):
+                value = sssnc*item_quantity 
+            elif (contract_type == 'SPAR2') & (sntc_sspt_offer_flag == 'SP Base')& (sssne != 0):
+                value = sssne*item_quantity     
+            elif (contract_type == 'SPAR3') & (sntc_sspt_offer_flag == 'SP Base')& (sssnp != 0):
+                value = sssnp*item_quantity 
+            elif (contract_type == 'SPAR4') & (sntc_sspt_offer_flag == 'SP Base')& (sss2p != 0):
+                value = sss2p*item_quantity
+            elif (contract_type == 'SPC2P') & (sntc_sspt_offer_flag == 'SP Base')& (ssc2p != 0):
+                value = ssc2p*item_quantity
+            elif (contract_type == 'SPC4P') & (sntc_sspt_offer_flag == 'SP Base'):
+                value = ssc4p*item_quantity
+            elif (contract_type == 'SPCS') & (sntc_sspt_offer_flag == 'SP Base')& (sscs != 0):
+                value = sscs*item_quantity
+            elif (contract_type == 'ECDN') & (sntc_sspt_offer_flag == 'TELEPRESENCE CUSTOMERS'):
+                value = sssnt*item_quantity         
+            elif (contract_type == 'ECDO') & (sntc_sspt_offer_flag == 'TELEPRESENCE CUSTOMERS'):
+                value = sscs*item_quantity          
+            elif (contract_type in lista )& (sssnt != 0):
+                value = sssnt*item_quantity
+            elif (contract_type in lista2) & (sntc_sspt_offer_flag == 'SP Base')& (sssnt != 0):
+                value = sssnt*item_quantity    
+            else:
+                value = 0
+
+            return value
+
+        merge['Uplift Recommended SL $'] = merge[['Contract Type','Item Quantity','SSC2P','SSC4P','SSC4S','SSCS','SSDR5',
+                                                'SSDR7','SSS2P','SSSNE','SSSNP','SSSNT','SSSW','ECMUS','SNTC SSPT Offer Flag',
+                                                'CS SSPT (Multiplier)','SSNCO','SSSNC'
+                                                ]].apply(lambda x: uplift_recommended_sl(x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10], 
+                                                                                        x[11], x[12], x[13], x[14], x[15],x[16],x[17]), axis=1)
+
+        # Calculando SNTC to SSPT Estimated $ Value Oppty
+        #[SSPT Estimated $ Value Oppty]-sum([Default Service List Price])
+
+        merge2 = merge
+
+        SP_Oppty1 = round(((merge2['Uplift Recommended SL $'].sum()) - (merge2['Annualized Extended Contract Line List USD Amount'].sum()))/1000,1)
+
+
+        return SP_Oppty1
+
+
+def ST_Oppty(IB):
+    '''
+    Def:
+        Calculates the Success Tracks opportunity.
+    Inputs:
+        df = dataframe containing the IB
+        st_mapping = Success tracks price list
+    Outs:
+        ST_Oppty value in KUSD
+    '''
+    #Loading necesary files
+    merge1 = IB.copy()
+
+    #------------------------------------------------Calculating Success Tracks Column-------------------------------------------------
+    merge1 = merge1.rename(columns={'Product SKU':'Success Tracks'})
+    merge1['Success Tracks'] = merge1['Success Tracks'].fillna('Not Elegible')
+
+    if len(merge1) == 0:
+        return 'N/A'
+    else:
+        j=merge1.iloc[0,0]  
+        #-----------------------------------------------------------------------------------------------------------------
+        # if contract type is in list_st mark it as 'Not Elegible'
+        lista_st = ['L1NB3','L1NB5','L1NBD','L1SWT','L24H3','L24H5','L24HR','L2NB3','L2NB5','L2NBD','L2SWT']
+        merge1['Success Tracks'].astype(str) 
+        merge1['Success Tracks'] = merge1[['Success Tracks','Contract Type']].apply(lambda x: 'Not Elegible' if x[1] in lista_st else x[0], axis=1)
+
+        #------------------------------------------------------------------------------------------------------------------
+        #Else mark it as 'Elegible'
+        merge1['Success Tracks'] = merge1['Success Tracks'].apply(lambda x: 'Elegible' if x != 'Not Elegible' else x)
+
+        #-----------------------------------------------Calculating SmartNet NBD ST Eligible-----------------------------------------------
+        #If the product it's elegible use the annualized extended contract line list USD Amount, otherwise it's 0
+        merge1['SmartNet NBD ST Eligible'] = merge1['Annualized Extended Contract Line List USD Amount']      
+        merge1['SmartNet NBD ST Eligible'] = merge1[['SmartNet NBD ST Eligible','Success Tracks']].apply(lambda x: 0 if x[1] != 'Elegible' else x[0], axis=1)
+
+        #-----------------------------------------------Calculating DNA HW Appliance-----------------------------------------------
+        #Check if 'DN2-HW-APL' or 'DN1-HW-APL' is in product ID and mark it as 1
+        merge1['DNA HW Appliance'] = merge1['Product ID']
+        merge1['DNA HW Appliance'] = merge1[['Product ID','DNA HW Appliance']].apply(lambda x: '1' if ('DN2-HW-APL' in x[0]) or ('DN1-HW-APL' in x[0]) else x[1], axis=1)
+
+        # If not mark it as 0
+        merge1['DNA HW Appliance'] = merge1['DNA HW Appliance'].apply(lambda x: '0' if x != '1' else x)
+
+        #-----------------------------------------------Calculating SmartNet ST Not Covered-----------------------------------------------
+        # If it's not covered and 1 in DNA HW Appliance get the annualized extended contract line list USD Amount
+        merge1['SmartNet ST Not Covered'] = 0
+        merge1['SmartNet ST Not Covered'] = merge1[['Coverage','DNA HW Appliance','SmartNet ST Not Covered','Default Service List Price USD']].apply(lambda x: x[3] if (x[0] == 'NOT COVERED') and (x[1] == '1') else x[2], axis=1)
+
+        #-----------------------------------------------Calculating ST Estimated List Price-----------------------------------------------
+        #merge1['ST Estimated List Price'] = (merge1['L2NBD'] + merge1['L2SWT'])*merge1['Item Quantity']
+        merge1['ST Estimated List Price'] = merge1['L2NBD']*merge1['Item Quantity']
+
+        #------------------------------------------------------Filtering------------------------------------------------------------------
+        merge1 = merge1[merge1['Coverage'] == 'COVERED']
+        merge1 = merge1[merge1['Success Tracks'] == 'Elegible']
+        #filtro product banding
+        merge12=merge1[merge1["ADJUSTED_CATEGORY"]=='High']
+        merge13=merge1[merge1["ADJUSTED_CATEGORY"]=='Medium']
+        
+        merge1=pd.concat([merge12,merge13])
+
+        #----------------------------------------Calculating Total ST Oppty KPI------------------------------------------------------------
+
+        sn_nbd_st_e = merge1['SmartNet NBD ST Eligible'].sum()
+        sn_st_not_covered = merge1['SmartNet ST Not Covered'].sum()
+        st_e_list_price = merge1['ST Estimated List Price'].sum()
+        ST_Oppty1= round (((st_e_list_price - sn_st_not_covered - sn_nbd_st_e)/1000),1)
+       
+
+        return ST_Oppty1
+
+def expert_care_verification(expert_care):
+    df = expert_care.copy()
+    df = df[df['IB Bands'] == 'IB Value $1M - $31M']
+    oppty = df['List Price (USD)'].sum()
+    return oppty
+
+def smartnet_verification(ib):
+    df = ib.copy()
+    oppty = df['Default Service List Price USD'].sum()
+    return oppty
+
+
+
