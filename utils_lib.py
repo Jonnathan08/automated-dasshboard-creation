@@ -127,10 +127,10 @@ def get_ids_list(fields_df, separator=';'):
     #flat_cr = list(itertools.chain(*cr_l))
     #cr_str_list = separator.join(flat_cr)
 
-    contracts_l = fields_df.query("`Contract ID` != ''")[
-        "contract_list"].tolist()
-    flat_cr = list(itertools.chain(*cr_l))
-    cr_str_list = separator.join(flat_cr)
+    #contracts_l = fields_df.query("`Contract ID` != ''")[
+     #   "contract_list"].tolist()
+    #flat_cr = list(itertools.chain(*contracts_l))
+    #contract_str_list = separator.join(flat_cr)
 
     return sav_str_list, gu_str_list, cav_str_list, cr_str_list
 
@@ -2367,7 +2367,6 @@ def SSPT_Oppty(IB):
 
         merge2 = merge
 
-
         SP_Oppty1 = round(((merge2['Uplift Recommended SL $'].sum()) - (merge2['Annualized Extended Contract Line List USD Amount'].sum()))/1000,1)
 
 
@@ -2516,7 +2515,7 @@ def IB_attributes(IB):
 #Assign color function for Q&A dataframe
 
 def color_qa(value):
-    if value in ['Incorrect', 'Negative Value','Empty Value', 'Big value']:
+    if value in ['Incorrect', 'Negative Value','Empty Value', 'Big value','QA Package Info']:
         color = 'red'
     else:
         color = 'green'
@@ -2585,11 +2584,18 @@ def estimated_list_price(ib):
 
 #Validation of lenght for calculated values
 
-def lenght_validation(number):
-    if number >= 8:
+def lenght_validation(number, lenght=8):
+    if number >= lenght:
         return('Big value')
     else:
         return('Correct')
 
 
+
+def smartsheet_len_info(df):
+    if (len(df['sav_list'].iloc[0]) > 11)  | (len(df['gu_list'].iloc[0]) > 11) | (len(df['cav_list'].iloc[0]) > 11) | (len(df['contract_list'].iloc[0]) > 11) | (len(df['cr_list'].iloc[0]) > 11):
+        return 'QA Package Info'
+    else:
+        return 'Correct'
+    
 
