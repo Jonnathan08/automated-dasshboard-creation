@@ -16,6 +16,7 @@ from tableauhyperapi import HyperProcess, Telemetry, \
     Inserter, \
     escape_name, escape_string_literal, \
     HyperException
+from tenacity import retry_if_not_result
 
 warnings.filterwarnings("ignore")
 
@@ -1806,6 +1807,9 @@ def get_schema(table, id_type=None):
         return smartsheet_cols
 
 
+
+#LDos Flag function
+
 def LDoS_flag(data):
     list = []
     for x in data:
@@ -1815,8 +1819,8 @@ def LDoS_flag(data):
             list.append('Y')
     return list
 
-# Funcion calcula el valor del IB value
 
+# Function for opportunity value of Smartnet Service
 
 def SNTC_Oppty(df, sntc_mapping):
 
@@ -1867,6 +1871,10 @@ def SNTC_Oppty(df, sntc_mapping):
         return sntc_oppty['IB Oppty'].sum()
     else:
         return 'N/A'
+
+
+
+#Function that generates the CSV files
 
 def set_datasource(df,type,folder_path,contract_types_list,
                     success_track_pricing_list,sspt_pricing_list_eligibleSSPT,
@@ -2171,14 +2179,7 @@ def set_datasource(df,type,folder_path,contract_types_list,
     return dataframe
 
 
-def LDoS_flag(data):
-    list=[]
-    for x in data:
-        if x >= datetime.today():
-            list.append('N')
-        else:
-            list.append('Y')
-    return list
+#Calculation of Solution Support recommenden SL oppty
     
 def SSPT_Oppty(IB):
     '''
@@ -2366,11 +2367,15 @@ def SSPT_Oppty(IB):
 
         merge2 = merge
 
+
         SP_Oppty1 = round(((merge2['Uplift Recommended SL $'].sum()) - (merge2['Annualized Extended Contract Line List USD Amount'].sum()))/1000,1)
 
 
         return SP_Oppty1
 
+
+
+#Calculation of Success Tracks oppty
 
 def ST_Oppty(IB):
     '''
@@ -2444,16 +2449,147 @@ def ST_Oppty(IB):
 
         return ST_Oppty1
 
+
+#Calculation of Expert Care oppty
+
 def expert_care_verification(expert_care):
     df = expert_care.copy()
     df = df[df['IB Bands'] == 'IB Value $1M - $31M']
     oppty = df['List Price (USD)'].sum()
     return oppty
 
+
+#Calculation of smartnet value
+
 def smartnet_verification(ib):
     df = ib.copy()
     oppty = df['Default Service List Price USD'].sum()
     return oppty
+
+
+#Calculation of IB value, IB covered and Mayor Renewal 
+
+def IB_attributes(IB):
+    
+# ------------------------------------------------------------------Calculating IB-----------------------------------------------------------------------------------
+    data = IB.groupby([IB['ID'],IB['Coverage'][IB['Coverage']=='COVERED']])[['Asset List Amount']].sum()
+    data = data.reset_index()
+    data = data.rename(columns={'Asset List Amount':'IB Value'})
+    data = data.drop(labels='Coverage', axis=1)
+    data.fillna(0,inplace=True)
+    
+
+# ------------------------------------------------------------------Calculating % coverage------------------------------------------------------------------------------
+    a = IB.groupby([IB['ID']])[['Asset List Amount']].sum()
+    a = a.reset_index()
+    a = a.rename(columns={'Asset List Amount':'IB Total'})
+    data= data.merge(a,right_on="ID",left_on="ID", how='left')
+    data.fillna(0,inplace=True)
+    data['Coverage Percentage'] = (data['IB Value']/data['IB Total'])*100
+    data = data.drop(labels='IB Total', axis=1)
+    
+
+#---------------------------------------------------------------Calculating Mayor Renewal -----------------------------------------------------------------------------
+
+    IB['Annual Extended Contract Line List USD Amount'] = IB['Annual Extended Contract Line List USD Amount'].astype(float) 
+    g = IB.groupby([IB['ID'],IB['Contract Line End Quarter']])['Annual Extended Contract Line List USD Amount'].sum()
+    g = g.reset_index()
+    g['Contract Line End Quarter'] = g['Contract Line End Quarter'].astype(str)
+    h = g.groupby(g['ID'])[['Annual Extended Contract Line List USD Amount']].max()
+
+    lis = h['Annual Extended Contract Line List USD Amount'].to_list()
+    lis2 = []
+    for i in lis:
+        j = g[g['Annual Extended Contract Line List USD Amount'] == i].iloc[0,1]
+        lis2.append(j)
+
+
+    df_mayor_ren=h.reset_index()
+    df_mayor_ren['Mayor Renewal'] = lis2
+    df_mayor_ren = df_mayor_ren.drop(labels='Annual Extended Contract Line List USD Amount', axis=1)
+    data= data.merge(df_mayor_ren,right_on="ID",left_on="ID", how='left')
+    data.fillna(0,inplace=True)
+
+    return data
+
+
+#Assign color function for Q&A dataframe
+
+def color_qa(value):
+    if value in ['Incorrect', 'Negative Value','Empty Value', 'Big value']:
+        color = 'red'
+    else:
+        color = 'green'
+
+    return 'color: %s' % color
+
+
+#Validation checking for negative or empty IB value
+
+def ib_value_validation(data):    
+    if data['IB Value'][0]<0:
+        return('Incorrect')
+    else:
+        return("Correct")
+   
+
+#Validation of coverage percentage between the correct range
+
+def ib_covered_validation(data):
+    if (data['Coverage Percentage'][0]/100 >= 0) & (data['Coverage Percentage'][0]/100 <= 1):
+        return('Correct')
+    else: 
+        return('Incorrect')
+
+
+#Validation for empty values of Mayor Renewal 
+
+def rw_validation(data):
+    if data['Mayor Renewal'][0] == '':
+        return('Empty Value')
+    else:
+        return('Correct')
+
+
+#Validation for negative values 
+
+def oppty_validation(oppty):
+    if oppty >= 0:
+        return('Correct')
+    else:
+        return('Negative Value')
+
+
+#Calculation of smartnet value for PI's eligibles for Success Tracks
+
+def smartnet_total_care_NBD_list_price(ib):
+    ib = ib[~(pd.isna(ib['Product SKU']) | ib['Contract Type'].isin(['L1NB3','L1NB5','L1NBD','L1SWT','L24H3','L24H5','L24HR','L2NB3','L2NB5','L2NBD','L2SWT']))]
+    ib = ib[ib['ADJUSTED_CATEGORY'].isin(['High','Medium'])]
+    ib = ib[ib['Coverage'] == 'COVERED']
+    smartnet_value = int(ib['Annualized Extended Contract Line List USD Amount'].sum())
+    lent = len(str(smartnet_value))
+    return smartnet_value, lent
+
+
+#Calculation of ST level 2 opportunity 
+
+def estimated_list_price(ib):
+    ib = ib[~(pd.isna(ib['Product SKU']) | ib['Contract Type'].isin(['L1NB3','L1NB5','L1NBD','L1SWT','L24H3','L24H5','L24HR','L2NB3','L2NB5','L2NBD','L2SWT']))]
+    ib = ib[ib['ADJUSTED_CATEGORY'].isin(['High','Medium'])]
+    ib = ib[ib['Coverage'] == 'COVERED']
+    l2_swt = ib['L2SWT'].fillna(0) * ib['Item Quantity'].fillna(0)
+    estimated_value = int(sum((ib['L2NBD'].fillna(0) + l2_swt) * ib['Item Quantity'].fillna(0)))
+    lent = len(str(estimated_value))
+    return estimated_value, lent
+
+
+#Validation of lenght for calculated values
+
+def lenght_validation(number):
+    if number >= 8:
+        return('Big value')
+    else:
+        return('Correct')
 
 
 
