@@ -2593,7 +2593,13 @@ def lenght_validation(number, lenght=8):
 
 
 def smartsheet_len_info(df):
-    if (len(df['sav_list'].iloc[0]) > 11)  | (len(df['gu_list'].iloc[0]) > 11) | (len(df['cav_list'].iloc[0]) > 11) | (len(df['contract_list'].iloc[0]) > 11) | (len(df['cr_list'].iloc[0]) > 11):
+    
+    parties = df['Who should be notified on completion of Analysis'].iloc[0].split(',')
+    appliance = df['Appliance ID'].iloc[0].split(',')
+    inventory = df['Inventory Name'].iloc[0].split(',')
+    
+    if (len(df['sav_list'].iloc[0]) > 11)  | (len(df['gu_list'].iloc[0]) > 11) | (len(df['cav_list'].iloc[0]) > 11) \
+        |(len(df['contract_list'].iloc[0]) > 11) | (len(parties) > 11) | (len(appliance) > 11) | (len(inventory) > 11):
         return 'QA Package Info'
     else:
         return 'Correct'
