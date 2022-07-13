@@ -2419,122 +2419,121 @@ def SSPT_Oppty(IB):
         # Calculando - CS Multiplier SL
         merge['CS Multiplier SL'] = ''
         merge = merge.reset_index()
+        
+        if merge.shape[0] != 0:
+            def service_level(ib):
+                
+                ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSS2P']].apply(lambda x: x[2] if x[0] == '24x7x2' else x[1], axis=1)
+                ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSC2P']].apply(lambda x: x[2] if x[0] == '24x7x2OS' else x[1], axis=1)
+                ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSNP']].apply(lambda x: x[2] if x[0] == '24x7x4' else x[1], axis=1)
+                ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSC4P']].apply(lambda x: x[2] if x[0] == '24x7x4OS' else x[1], axis=1)
+                ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSNE']].apply(lambda x: x[2] if x[0] == '8x5x4' else x[1], axis=1)
+                ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSC4S']].apply(lambda x: x[2] if x[0] == '8x5x4OS' else x[1], axis=1)
+                ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSNT']].apply(lambda x: x[2] if x[0] == 'NBD' else x[1], axis=1) 
+                ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSCS']].apply(lambda x: x[2] if x[0] == '8x5xNDBOS' else x[1], axis=1)       
+                ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSDR7']].apply(lambda x: x[2] if x[0] == 'DR 24x7x4OS' else x[1], axis=1)
+                ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSDR5']].apply(lambda x: x[2] if x[0] == 'DR 8x5xNDBOS' else x[1], axis=1)
+                ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSW']].apply(lambda x: x[2] if x[0] == 'SNTC NO RMA' else x[1], axis=1)
+                ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSW']].apply(lambda x: 0 if x[0] not in ['24x7x2','24x7x2OS','24x7x4','24x7x4OS','8x5x4','8x5x4OS','NBD','8x5xNDBOS','DR 24x7x4OS','DR 8x5xNDBOS','SNTC NO RMA'] else x[1], axis=1)
 
-        def service_level(ib):
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSS2P']].apply(lambda x: x[2] if x[0] == '24x7x2' else x[1], axis=1)
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSC2P']].apply(lambda x: x[2] if x[0] == '24x7x2OS' else x[1], axis=1)
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSNP']].apply(lambda x: x[2] if x[0] == '24x7x4' else x[1], axis=1)
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSC4P']].apply(lambda x: x[2] if x[0] == '24x7x4OS' else x[1], axis=1)
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSNE']].apply(lambda x: x[2] if x[0] == '8x5x4' else x[1], axis=1)
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSC4S']].apply(lambda x: x[2] if x[0] == '8x5x4OS' else x[1], axis=1)
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSNT']].apply(lambda x: x[2] if x[0] == 'NBD' else x[1], axis=1) 
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSCS']].apply(lambda x: x[2] if x[0] == '8x5xNDBOS' else x[1], axis=1)       
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSDR7']].apply(lambda x: x[2] if x[0] == 'DR 24x7x4OS' else x[1], axis=1)
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSDR5']].apply(lambda x: x[2] if x[0] == 'DR 8x5xNDBOS' else x[1], axis=1)
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSW']].apply(lambda x: x[2] if x[0] == 'SNTC NO RMA' else x[1], axis=1)
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSW']].apply(lambda x: 0 if x[0] not in ['24x7x2','24x7x2OS','24x7x4','24x7x4OS','8x5x4','8x5x4OS','NBD','8x5xNDBOS','DR 24x7x4OS','DR 8x5xNDBOS','SNTC NO RMA'] else x[1], axis=1)
-
-        service_level(merge)
-
-        # Calculando - CS SSPT (Multiplier)
-        merge['CS SSPT (Multiplier)'] = 0
-        merge['CS SSPT (Multiplier)'] = merge[['Uplift','CS SSPT (Multiplier)','CS Multiplier SL','Item Quantity','Multiplier']].apply(lambda x: 0 if x[0] == '' else x[2]*x[3]*x[4], axis=1)
+            service_level(merge)
+        
+            # Calculando - CS SSPT (Multiplier)
+            merge['CS SSPT (Multiplier)'] = 0
+            merge['CS SSPT (Multiplier)'] = merge[['Uplift','CS SSPT (Multiplier)','CS Multiplier SL','Item Quantity','Multiplier']].apply(lambda x: 0 if x[0] == '' else x[2]*x[3]*x[4], axis=1)
 
         # Calculando - Uplift Recommended SL $
+        
+            merge['Uplift Recommended SL $']= ''
+            lista = ['SNCO','PSUP','C2P','3C4P','C4P','C4S','CS','UCSD5','UCSD7','S2P','SNTE','SNTP','3SNT','5SNT','SNT','PSRT','PSUT','LSNT']
+            lista2 = ['SPAR1','SPAR2','SPAR3','SPAR4','SPC2P','SBAR1','SPCS']
+            lista3 = ['ECDN','ECDO']
 
-        merge['Uplift Recommended SL $']= ''
-        lista = ['SNCO','PSUP','C2P','3C4P','C4P','C4S','CS','UCSD5','UCSD7','S2P','SNTE','SNTP','3SNT','5SNT','SNT','PSRT','PSUT','LSNT']
-        lista2 = ['SPAR1','SPAR2','SPAR3','SPAR4','SPC2P','SBAR1','SPCS']
-        lista3 = ['ECDN','ECDO']
-
-        merge = merge.reset_index()
-
-        def uplift_recommended_sl(contract_type,item_quantity,ssc2p,ssc4p,ssc4s,sscs,ssdr5,
-                            ssdr7,sss2p,sssne,sssnp,sssnt,sssw,ecmus,sntc_sspt_offer_flag,cs_sspt_multiplier,
-                            ssnco,sssnc):
-            value = 0
-
-            if (contract_type == 'C2P') & (ssc2p != 0):
-                value = ssc2p*item_quantity
-            elif (contract_type == '3C4P') & (ssc4p != 0):
-                        value = ssc4p*item_quantity    
-            elif (contract_type == 'C4P') & (ssc4p != 0):
-                value = ssc4p*item_quantity
-            elif (contract_type == 'C4S') & (ssc4s != 0):
-                value = ssc4s*item_quantity
-            elif (contract_type == 'CS') & (sscs != 0):
-                value = sscs*item_quantity
-            elif (contract_type == 'UCSD5') & (ssdr5 != 0):
-                value = ssdr5*item_quantity    
-            elif (contract_type == 'UCSD7') & (ssdr7 != 0):
-                value = ssdr7*item_quantity
-            elif (contract_type == 'S2P') & (sss2p != 0):
-                value = sss2p*item_quantity
-            elif (contract_type == 'SNTE') & (sssne != 0):
-                value = sssne*item_quantity
-            elif (contract_type == '3SNTP') & (sssnp != 0):
-                value = sssnp*item_quantity
-            elif (contract_type == 'SNTP') & (sssnp != 0):
-                value = sssnp*item_quantity
-            elif (contract_type == '5SNTP') & (sssnp != 0):
-                value = sssnp*item_quantity
-            elif (contract_type == 'SW') & (sssnt != 0):
-                value = sssnt*item_quantity   
-            elif (contract_type == 'SW') & (sssw != 0):
-                value = sssw*item_quantity
-            elif (contract_type == 'ECMU') & (ecmus != 0):
-                value = ecmus*item_quantity
-            elif (sntc_sspt_offer_flag == 'Combined Services'):
-                value = cs_sspt_multiplier   
-            elif (contract_type == 'PSUP') & (sssnp != 0):
-                value = sssnp*item_quantity    
-            elif (contract_type == 'SNCO') & (ssnco != 0):
-                value = ssnco*item_quantity 
-            elif (contract_type == 'SNC') & (sssnc != 0):
-                value = sssnc*item_quantity 
-            elif (contract_type == 'SPAR2') & (sntc_sspt_offer_flag == 'SP Base')& (sssne != 0):
-                value = sssne*item_quantity     
-            elif (contract_type == 'SPAR3') & (sntc_sspt_offer_flag == 'SP Base')& (sssnp != 0):
-                value = sssnp*item_quantity 
-            elif (contract_type == 'SPAR4') & (sntc_sspt_offer_flag == 'SP Base')& (sss2p != 0):
-                value = sss2p*item_quantity
-            elif (contract_type == 'SPC2P') & (sntc_sspt_offer_flag == 'SP Base')& (ssc2p != 0):
-                value = ssc2p*item_quantity
-            elif (contract_type == 'SPC4P') & (sntc_sspt_offer_flag == 'SP Base'):
-                value = ssc4p*item_quantity
-            elif (contract_type == 'SPCS') & (sntc_sspt_offer_flag == 'SP Base')& (sscs != 0):
-                value = sscs*item_quantity
-            elif (contract_type == 'ECDN') & (sntc_sspt_offer_flag == 'TELEPRESENCE CUSTOMERS'):
-                value = sssnt*item_quantity         
-            elif (contract_type == 'ECDO') & (sntc_sspt_offer_flag == 'TELEPRESENCE CUSTOMERS'):
-                value = sscs*item_quantity          
-            elif (contract_type in lista )& (sssnt != 0):
-                value = sssnt*item_quantity
-            elif (contract_type in lista2) & (sntc_sspt_offer_flag == 'SP Base')& (sssnt != 0):
-                value = sssnt*item_quantity    
-            else:
+            merge = merge.reset_index()
+        
+            def uplift_recommended_sl(contract_type,item_quantity,ssc2p,ssc4p,ssc4s,sscs,ssdr5,
+                                ssdr7,sss2p,sssne,sssnp,sssnt,sssw,ecmus,sntc_sspt_offer_flag,cs_sspt_multiplier,
+                                ssnco,sssnc):
                 value = 0
 
-            return value
+                if (contract_type == 'C2P') & (ssc2p != 0):
+                    value = ssc2p*item_quantity
+                elif (contract_type == '3C4P') & (ssc4p != 0):
+                            value = ssc4p*item_quantity    
+                elif (contract_type == 'C4P') & (ssc4p != 0):
+                    value = ssc4p*item_quantity
+                elif (contract_type == 'C4S') & (ssc4s != 0):
+                    value = ssc4s*item_quantity
+                elif (contract_type == 'CS') & (sscs != 0):
+                    value = sscs*item_quantity
+                elif (contract_type == 'UCSD5') & (ssdr5 != 0):
+                    value = ssdr5*item_quantity    
+                elif (contract_type == 'UCSD7') & (ssdr7 != 0):
+                    value = ssdr7*item_quantity
+                elif (contract_type == 'S2P') & (sss2p != 0):
+                    value = sss2p*item_quantity
+                elif (contract_type == 'SNTE') & (sssne != 0):
+                    value = sssne*item_quantity
+                elif (contract_type == '3SNTP') & (sssnp != 0):
+                    value = sssnp*item_quantity
+                elif (contract_type == 'SNTP') & (sssnp != 0):
+                    value = sssnp*item_quantity
+                elif (contract_type == '5SNTP') & (sssnp != 0):
+                    value = sssnp*item_quantity
+                elif (contract_type == 'SW') & (sssnt != 0):
+                    value = sssnt*item_quantity   
+                elif (contract_type == 'SW') & (sssw != 0):
+                    value = sssw*item_quantity
+                elif (contract_type == 'ECMU') & (ecmus != 0):
+                    value = ecmus*item_quantity
+                elif (sntc_sspt_offer_flag == 'Combined Services'):
+                    value = cs_sspt_multiplier   
+                elif (contract_type == 'PSUP') & (sssnp != 0):
+                    value = sssnp*item_quantity    
+                elif (contract_type == 'SNCO') & (ssnco != 0):
+                    value = ssnco*item_quantity 
+                elif (contract_type == 'SNC') & (sssnc != 0):
+                    value = sssnc*item_quantity 
+                elif (contract_type == 'SPAR2') & (sntc_sspt_offer_flag == 'SP Base')& (sssne != 0):
+                    value = sssne*item_quantity     
+                elif (contract_type == 'SPAR3') & (sntc_sspt_offer_flag == 'SP Base')& (sssnp != 0):
+                    value = sssnp*item_quantity 
+                elif (contract_type == 'SPAR4') & (sntc_sspt_offer_flag == 'SP Base')& (sss2p != 0):
+                    value = sss2p*item_quantity
+                elif (contract_type == 'SPC2P') & (sntc_sspt_offer_flag == 'SP Base')& (ssc2p != 0):
+                    value = ssc2p*item_quantity
+                elif (contract_type == 'SPC4P') & (sntc_sspt_offer_flag == 'SP Base'):
+                    value = ssc4p*item_quantity
+                elif (contract_type == 'SPCS') & (sntc_sspt_offer_flag == 'SP Base')& (sscs != 0):
+                    value = sscs*item_quantity
+                elif (contract_type == 'ECDN') & (sntc_sspt_offer_flag == 'TELEPRESENCE CUSTOMERS'):
+                    value = sssnt*item_quantity         
+                elif (contract_type == 'ECDO') & (sntc_sspt_offer_flag == 'TELEPRESENCE CUSTOMERS'):
+                    value = sscs*item_quantity          
+                elif (contract_type in lista )& (sssnt != 0):
+                    value = sssnt*item_quantity
+                elif (contract_type in lista2) & (sntc_sspt_offer_flag == 'SP Base')& (sssnt != 0):
+                    value = sssnt*item_quantity    
+                else:
+                    value = 0
 
-        merge['Uplift Recommended SL $'] = merge[['Contract Type','Item Quantity','SSC2P','SSC4P','SSC4S','SSCS','SSDR5',
-                                                'SSDR7','SSS2P','SSSNE','SSSNP','SSSNT','SSSW','ECMUS','SNTC SSPT Offer Flag',
-                                                'CS SSPT (Multiplier)','SSNCO','SSSNC'
-                                                ]].apply(lambda x: uplift_recommended_sl(x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10], 
-                                                                                        x[11], x[12], x[13], x[14], x[15],x[16],x[17]), axis=1)
+                return value
 
-        # Calculando SNTC to SSPT Estimated $ Value Oppty
-        #[SSPT Estimated $ Value Oppty]-sum([Default Service List Price])
+            merge['Uplift Recommended SL $'] = merge[['Contract Type','Item Quantity','SSC2P','SSC4P','SSC4S','SSCS','SSDR5',
+                                                    'SSDR7','SSS2P','SSSNE','SSSNP','SSSNT','SSSW','ECMUS','SNTC SSPT Offer Flag',
+                                                    'CS SSPT (Multiplier)','SSNCO','SSSNC'
+                                                    ]].apply(lambda x: uplift_recommended_sl(x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10], 
+                                                                                            x[11], x[12], x[13], x[14], x[15],x[16],x[17]), axis=1)
+        
+        else:
+            merge['Uplift Recommended SL $'] = 0
 
         merge2 = merge
 
 
         SP_Oppty1 = round(((merge2['Uplift Recommended SL $'].sum()) - (merge2['Annualized Extended Contract Line List USD Amount'].sum()))/1000,1)
 
-
         return SP_Oppty1
-
-
 
 #Calculation of Success Tracks oppty
 
@@ -2688,41 +2687,48 @@ def color_qa(value):
 #Validation checking for negative or empty IB value
 
 def ib_value_validation(data):    
-    try: 
+    try:
         if data['IB Value'][0]<0:
             return('Incorrect')
         else:
             return("Correct")
     except:
-        return('Correct')
-   
+        return("Correct")   
 
 #Validation of coverage percentage between the correct range
 
 def ib_covered_validation(data):
-    if (data['Coverage Percentage'][0]/100 >= 0) & (data['Coverage Percentage'][0]/100 <= 1):
+    try:
+        if (data['Coverage Percentage'][0]/100 >= 0) & (data['Coverage Percentage'][0]/100 <= 1):
+            return('Correct')
+        else: 
+            return('Incorrect')
+    except:
         return('Correct')
-    else: 
-        return('Incorrect')
 
 
 #Validation for empty values of Mayor Renewal 
 
 def rw_validation(data):
-    if data['Mayor Renewal'][0] == '':
-        return('Empty Value')
-    else:
+    try:
+        if data['Mayor Renewal'][0] == '':
+            return('Empty Value')
+        else:
+            return('Correct')
+    except:
         return('Correct')
 
 
 #Validation for negative values 
 
 def oppty_validation(oppty):
-    if oppty >= 0:
+    try:
+        if oppty >= 0:
+            return('Correct')
+        else:
+            return('Negative Value')
+    except:
         return('Correct')
-    else:
-        return('Negative Value')
-
 
 #Calculation of smartnet value for PI's eligibles for Success Tracks
 
@@ -2750,9 +2756,12 @@ def estimated_list_price(ib):
 #Validation of lenght for calculated values
 
 def lenght_validation(number, lenght=8):
-    if number >= lenght:
-        return('Big value')
-    else:
+    try:
+        if number >= lenght:
+            return('Big value')
+        else:
+            return('Correct')
+    except:
         return('Correct')
 
 def smartsheet_len_info(df):
