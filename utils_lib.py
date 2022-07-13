@@ -1,4 +1,5 @@
 from ast import NotIn
+from csv import excel
 import warnings
 from matplotlib.pyplot import axis
 
@@ -2686,10 +2687,13 @@ def color_qa(value):
 #Validation checking for negative or empty IB value
 
 def ib_value_validation(data):    
-    if data['IB Value'][0]<0:
-        return('Incorrect')
-    else:
-        return("Correct")
+    try: 
+        if data['IB Value'][0]<0:
+            return('Incorrect')
+        else:
+            return("Correct")
+    except:
+        return('Correct')
    
 
 #Validation of coverage percentage between the correct range
