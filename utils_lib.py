@@ -387,12 +387,13 @@ def get_ib_data(user, ids, id_type):
                     COVERAGE,
                     SERVICE_CONTRACT_NUMBER,
                     CONTRACT_LINE_STATUS,
-                    CONTRACT_TYPE,CONTRACT_LINE_END_FISCAL_QUARTER,
+                    CONTRACT_TYPE,
+                    CONTRACT_LINE_END_FISCAL_QUARTER,
                     CONTRACT_LINE_END_FISCAL_YEAR,
                     SHIPPED_FISCAL_YEAR,
                     SERVICE_BRAND_CODE,
                     OFFER_TYPE_NAME,
-                    DV_GOODS_PRODUCT_CATEGORY_CD,
+                    ASSET_TYPE,
                     LAST_SUPPORT_DT,
                     LDOS_FISCAL_QUARTER,
                     LDOS_FISCAL_YEAR,
@@ -404,20 +405,17 @@ def get_ib_data(user, ids, id_type):
                     sum(SERVICE_MAPPED_PRICE),
                     sum(INSTALLATION_QUANTITY),
                     sum(ANNUAL_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT),
-                    sum(ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT),
+                    SUM(ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT),
                     sum(ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT),
                     sum(ANNUALIZED_CONTRACT_LINE_NET_USD_AMOUNT),
                     sum(CONTRACT_LINE_LIST_USD_AMOUNT),
-                    sum(CORRECTED_CONTRACT_LINE_NET_USD_AMOUNT)
+                    sum(CONTRACT_LINE_NET_USD_AMOUNT),
+                    sum(ASSET_LIST_PRICE)
                     FROM CX_DB.CX_CA_BR.BV_OE_IB_ASSET
                     WHERE ACCOUNT_IDENTIFIER = '{id_type}'
                     AND 
                     CUSTOMER_ID IN ({ids})
-                    group by CUSTOMER_ID,CUSTOMER_NAME,L2_SALES_TERRITORY_DESCR,COVERAGE,
-                    SERVICE_CONTRACT_NUMBER,CONTRACT_LINE_STATUS,CONTRACT_TYPE,CONTRACT_LINE_END_FISCAL_QUARTER,
-                    CONTRACT_LINE_END_FISCAL_YEAR,SHIPPED_FISCAL_YEAR,SERVICE_BRAND_CODE,OFFER_TYPE_NAME,PRODUCT_CATEGORY_CD,DV_GOODS_PRODUCT_CATEGORY_CD,
-                    LAST_SUPPORT_DT,LDOS_FISCAL_QUARTER,LDOS_FISCAL_YEAR,BUSINESS_ENTITY_DESCR,SUB_BUSINESS_ENTITY_DESCR,
-                    RU_BK_PRODUCT_FAMILY_ID,BK_PRODUCT_ID,BK_PRODUCT_TYPE_ID
+                    group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
                  """
 
     cs.execute(query_ib)
@@ -435,7 +433,7 @@ def get_ib_data(user, ids, id_type):
                 'SHIPPED_FISCAL_YEAR',
                 'SERVICE_BRAND_CODE',
                 'OFFER_TYPE_NAME',
-                'DV_GOODS_PRODUCT_CATEGORY_CD',
+                'ASSET_TYPE',
                 'LAST_SUPPORT_DT',
                 'LDOS_FISCAL_QUARTER',
                 'LDOS_FISCAL_YEAR',
@@ -451,7 +449,8 @@ def get_ib_data(user, ids, id_type):
                 'ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT',
                 'ANNUALIZED_CONTRACT_LINE_NET_USD_AMOUNT',
                 'CONTRACT_LINE_LIST_USD_AMOUNT',
-                'CORRECTED_CONTRACT_LINE_NET_USD_AMOUNT']
+                'CORRECTED_CONTRACT_LINE_NET_USD_AMOUNT',
+                'ASSET_LIST_PRICE']
 
     ib_df = pd.DataFrame(df, columns=ib_columns)
 
@@ -485,9 +484,10 @@ def get_coverage_data(user, ids, id_type):
                     CUSTOMER_NAME,
                     COVERAGE,
                     sum(INSTALLATION_QUANTITY),
+                    SUM(ASSET_LIST_PRICE),
                     sum(PRODUCT_NET_PRICE),
                     sum(ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT),
-                    sum(CORRECTED_CONTRACT_LINE_NET_USD_AMOUNT),
+                    sum(CONTRACT_LINE_NET_USD_AMOUNT),
                     sum(ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT)
                     FROM CX_DB.CX_CA_BR.BV_OE_IB_ASSET
                     WHERE ACCOUNT_IDENTIFIER = '{id_type}'
@@ -507,9 +507,10 @@ def get_coverage_data(user, ids, id_type):
     coverage_columns = ['CUSTOMER_ID','CUSTOMER_NAME',
                         'COVERAGE',
                         'INSTALLATION_QUANTITY',
+                        'ASSET_LIST_PRICE',
                         'PRODUCT_NET_PRICE',
                         'ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT',
-                        'CORRECTED_CONTRACT_LINE_NET_USD_AMOUNT',
+                        'CONTRACT_LINE_NET_USD_AMOUNT',
                         'ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT',
                         ]
 
@@ -2053,7 +2054,7 @@ def set_datasource(df,type,folder_path,contract_types_list,
                     'Product ID', 'Product Type', 'Default Service List Price USD', 'Item Quantity',
                     'Annual Extended Contract Line List USD Amount', 'Annual Contract Line Net USD Amount',
                     'Annualized Extended Contract Line List USD Amount', 'Annualized Contract Line Net USD Amount',
-                    'Contract Line List Price USD', 'Contract Line Net Price USD']
+                    'Contract Line List Price USD', 'Contract Line Net Price USD','Asset List Amount']
 
         dataframe.columns = ib_cols
 
@@ -2088,8 +2089,8 @@ def set_datasource(df,type,folder_path,contract_types_list,
                             'Annualized Extended Contract Line List USD Amount': float,
                             'Annualized Contract Line Net USD Amount': float,
                             'Contract Line List Price USD': float,
-                            'Contract Line Net Price USD': float})
-                            #'Asset List Amount': float})
+                            'Contract Line Net Price USD': float,
+                            'Asset List Amount': float})
 
         dataframe['LDoS'] = dataframe['LDoS'].apply(lambda x: datetime.strptime(str(x) , '%Y-%m-%d %H:%M:%S') if pd.notna(x) else x)
 
@@ -2108,7 +2109,7 @@ def set_datasource(df,type,folder_path,contract_types_list,
 
     elif type == 'coverage':
 
-        coverage_cols = ['ID', 'Name', 'Coverage', 'Item Quantity', 'Asset Net Amount', 'Annual Contract Line Net USD Amount',
+        coverage_cols = ['ID', 'Name', 'Coverage', 'Item Quantity', 'Asset List Amount', 'Asset Net Amount', 'Annual Contract Line Net USD Amount',
                         'Contract Line Net Price USD', 'Annualized Extended Contract Line List USD Amount'
         ]
 
@@ -2119,7 +2120,7 @@ def set_datasource(df,type,folder_path,contract_types_list,
             'Name': str,
             'Coverage': str,
             'Item Quantity': int,
-            #'Asset List Amount': float,
+            'Asset List Amount': float,
             'Asset Net Amount': float,
             'Annual Contract Line Net USD Amount': float,
             'Contract Line Net Price USD': float,
