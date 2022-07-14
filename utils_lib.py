@@ -425,36 +425,51 @@ def get_ib_data(user, ids, id_type):
 
     # CURRENT_OWNER_CCO_ID
     # INCIDENT_CONTACT_EMAIL  ## Deleted from the view made by Facundo
+    if id_type == 'SAV':
+        ib_columns = ['SAV ID','SAV Name','Best Site Sales Level 2 Name',
+                    'Coverage','Contract Number','Covered Line Status','Contract Type','Contract Line End Quarter',
+                    'Contract Line End Fiscal Year','Instance Shipped Fiscal Year','Service Brand Code','Offer Type Name',
+                    'Asset Type','LDoS','LDoS Fiscal Quarter','LDoS FY',
+                    'Business Entity Name','Sub Business Entity Name','Product Family','Product ID','Product Type',
+                    'Default Service List Price USD','Item Quantity',
+                    'Annual Extended Contract Line List USD Amount','Annual Contract Line Net USD Amount','Annualized Extended Contract Line List USD Amount',
+                    'Annualized Contract Line Net USD Amount',
+                    'Contract Line List Price USD','Contract Line Net Price USD','Asset List Amount']
 
-    ib_columns = ['CUSTOMER_ID','CUSTOMER_NAME','L2_SALES_TERRITORY_DESCR',
-                'COVERAGE','SERVICE_CONTRACT_NUMBER','CONTRACT_LINE_STATUS',
-                'CONTRACT_TYPE','CONTRACT_LINE_END_FISCAL_QUARTER',
-                'CONTRACT_LINE_END_FISCAL_YEAR',
-                'SHIPPED_FISCAL_YEAR',
-                'SERVICE_BRAND_CODE',
-                'OFFER_TYPE_NAME',
-                'ASSET_TYPE',
-                'LAST_SUPPORT_DT',
-                'LDOS_FISCAL_QUARTER',
-                'LDOS_FISCAL_YEAR',
-                'BUSINESS_ENTITY_DESCR',
-                'SUB_BUSINESS_ENTITY_DESCR',
-                'RU_BK_PRODUCT_FAMILY_ID',
-                'BK_PRODUCT_ID',
-                'BK_PRODUCT_TYPE_ID',
-                'SERVICE_MAPPED_PRICE',
-                'INSTALLATION_QUANTITY',
-                'ANNUAL_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT',
-                'ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT',
-                'ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT',
-                'ANNUALIZED_CONTRACT_LINE_NET_USD_AMOUNT',
-                'CONTRACT_LINE_LIST_USD_AMOUNT',
-                'CORRECTED_CONTRACT_LINE_NET_USD_AMOUNT',
-                'ASSET_LIST_PRICE']
+    elif id_type == 'GU':
+        ib_columns = ['Best Site GU Party ID','Best Site GU Party Name','Best Site Sales Level 2 Name',
+                    'Coverage','Contract Number','Covered Line Status','Contract Type','Contract Line End Quarter',
+                    'Contract Line End Fiscal Year','Instance Shipped Fiscal Year','Service Brand Code','Offer Type Name',
+                    'Asset Type','LDoS','LDoS Fiscal Quarter','LDoS FY',
+                    'Business Entity Name','Sub Business Entity Name','Product Family','Product ID','Product Type',
+                    'Default Service List Price USD','Item Quantity',
+                    'Annual Extended Contract Line List USD Amount','Annual Contract Line Net USD Amount','Annualized Extended Contract Line List USD Amount',
+                    'Annualized Contract Line Net USD Amount',
+                    'Contract Line List Price USD','Contract Line Net Price USD','Asset List Amount']  
+
+    elif id_type == 'CAV':
+        ib_columns = ['CAV - Account Name','CAV Name','Best Site Sales Level 2 Name',
+                    'Coverage','Contract Number','Covered Line Status','Contract Type','Contract Line End Quarter',
+                    'Contract Line End Fiscal Year','Instance Shipped Fiscal Year','Service Brand Code','Offer Type Name',
+                    'Asset Type','LDoS','LDoS Fiscal Quarter','LDoS FY',
+                    'Business Entity Name','Sub Business Entity Name','Product Family','Product ID','Product Type',
+                    'Default Service List Price USD','Item Quantity',
+                    'Annual Extended Contract Line List USD Amount','Annual Contract Line Net USD Amount','Annualized Extended Contract Line List USD Amount',
+                    'Annualized Contract Line Net USD Amount',
+                    'Contract Line List Price USD','Contract Line Net Price USD','Asset List Amount']
+
+    elif id_type == 'CR':
+        ib_columns = ['Best Site CR Party ID','Best Site CR Party Name','Best Site Sales Level 2 Name',
+                    'Coverage','Contract Number','Covered Line Status','Contract Type','Contract Line End Quarter',
+                    'Contract Line End Fiscal Year','Instance Shipped Fiscal Year','Service Brand Code','Offer Type Name',
+                    'Asset Type','LDoS','LDoS Fiscal Quarter','LDoS FY',
+                    'Business Entity Name','Sub Business Entity Name','Product Family','Product ID','Product Type',
+                    'Default Service List Price USD','Item Quantity',
+                    'Annual Extended Contract Line List USD Amount','Annual Contract Line Net USD Amount','Annualized Extended Contract Line List USD Amount',
+                    'Annualized Contract Line Net USD Amount',
+                    'Contract Line List Price USD','Contract Line Net Price USD','Asset List Amount']   
 
     ib_df = pd.DataFrame(df, columns=ib_columns)
-
-    #types = tac_df.dtypes.to_dict()
 
     return ib_df
 
@@ -503,20 +518,23 @@ def get_coverage_data(user, ids, id_type):
 
     # CURRENT_OWNER_CCO_ID
     # INCIDENT_CONTACT_EMAIL  ## Deleted from the view made by Facundo
+    if id_type == 'SAV':
+        coverage_columns = ['SAV ID','SAV Name','Coverage','Item Quantity','Asset List Amount','Asset Net Amount','ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT',
+                        'Contract Line Net Price USD','ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT']
 
-    coverage_columns = ['CUSTOMER_ID','CUSTOMER_NAME',
-                        'COVERAGE',
-                        'INSTALLATION_QUANTITY',
-                        'ASSET_LIST_PRICE',
-                        'PRODUCT_NET_PRICE',
-                        'ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT',
-                        'CONTRACT_LINE_NET_USD_AMOUNT',
-                        'ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT',
-                        ]
+    elif id_type == 'GU':
+        coverage_columns =  ['Best Site GU Party ID','Best Site GU Party Name','Coverage','Item Quantity','Asset List Amount','Asset Net Amount',
+                        'ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT','Contract Line Net Price USD','ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT']
+
+    elif id_type == 'CAV':
+        coverage_columns = ['CAV - Account Name','CAV Name','Coverage','Item Quantity','Asset List Amount','Asset Net Amount',
+                        'ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT','Contract Line Net Price USD','ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT']
+
+    elif id_type == 'CR':
+        coverage_columns = ['Best Site CR Party ID','Best Site CR Party Name','Coverage','Item Quantity','Asset List Amount','Asset Net Amount',
+                        'ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT','Contract Line Net Price USD','ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT']  
 
     coverage_df = pd.DataFrame(df, columns=coverage_columns)
-
-    #types = tac_df.dtypes.to_dict()
 
     return coverage_df
 
