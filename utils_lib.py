@@ -2531,9 +2531,9 @@ def SSPT_Oppty(IB):
         merge2 = merge
 
 
-        #SP_Oppty1 = round(((merge2['Uplift Recommended SL $'].sum()) - (merge2['Annualized Extended Contract Line List USD Amount'].sum()))/1000,1)
+        SP_Oppty1 = round(((merge2['Uplift Recommended SL $'].sum()) - (merge2['Annualized Extended Contract Line List USD Amount'].sum()))/1000,1)
 
-        return merge2['Uplift Recommended SL $'].sum() ,merge2['Annualized Extended Contract Line List USD Amount'].sum()
+        return SP_Oppty1
 
 #Calculation of Success Tracks oppty
 
