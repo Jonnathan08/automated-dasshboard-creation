@@ -1896,7 +1896,7 @@ def set_datasource(df,type,folder_path,contract_types_list,
 
         dataframe.columns = ib_cols
 
-        dataframe.astype({'ID': int,
+        dataframe = dataframe.astype({'ID': int,
                             'Name': str,
                             'Best Site ID': float,  # double
                             'Best Site Customer Name': str,
@@ -1954,7 +1954,7 @@ def set_datasource(df,type,folder_path,contract_types_list,
 
         dataframe.columns = coverage_cols
 
-        dataframe.astype({
+        dataframe = dataframe.astype({
             'ID': str,
             'Name': str,
             'Coverage': str,
@@ -1979,7 +1979,7 @@ def set_datasource(df,type,folder_path,contract_types_list,
 
         dataframe.columns = sw_cols
 
-        dataframe.astype({
+        dataframe = dataframe.astype({
             'ID': str,
             'Name': str,
             'Sales Level 1 Name': str,
@@ -2023,7 +2023,7 @@ def set_datasource(df,type,folder_path,contract_types_list,
 
         dataframe.columns = tac_cols
 
-        dataframe.astype({
+        dataframe = dataframe.astype({
             'INCIDENT_NUMBER': int,
             'CURRENT_SEVERITY_INT': int,
             'MAX_SEVERITY_INT': int,
@@ -2130,7 +2130,7 @@ def set_datasource(df,type,folder_path,contract_types_list,
 
         dataframe.columns = cir_cols
 
-        dataframe.astype({
+        dataframe = dataframe.astype({
             'Party ID': int,
             'ACTIVE_YORN': str,
             'Customer': str,
@@ -2514,7 +2514,7 @@ def IB_attributes(IB):
 #Assign color function for Q&A dataframe
 
 def color_qa(value):
-    if value in ['Incorrect', 'Negative Value','Empty Value', 'Big value','QA Package Info']:
+    if value in ['Incorrect', 'Negative Value','Empty Value', 'Big value','QA Package Info', 'No IB data', 'No data']:
         color = 'red'
     else:
         color = 'green'
@@ -2531,7 +2531,7 @@ def ib_value_validation(data):
         else:
             return("Correct")
     except:
-        return("Correct")
+        return("No IB data")
    
 
 #Validation of coverage percentage between the correct range
@@ -2543,7 +2543,7 @@ def ib_covered_validation(data):
         else: 
             return('Incorrect')
     except:
-        return('Correct')
+        return('No IB data')
 
 
 #Validation for empty values of Mayor Renewal 
@@ -2555,7 +2555,7 @@ def rw_validation(data):
         else:
             return('Correct')
     except:
-        return('Correct')
+        return('No IB data')
 
 
 #Validation for negative values 
@@ -2567,7 +2567,7 @@ def oppty_validation(oppty):
         else:
             return('Negative Value')
     except:
-        return('Correct')
+        return('No data')
 
 #Calculation of smartnet value for PI's eligibles for Success Tracks
 
@@ -2601,7 +2601,7 @@ def lenght_validation(number, lenght=8):
         else:
             return('Correct')
     except:
-        return('Correct')
+        return('No data')
 
 
 
