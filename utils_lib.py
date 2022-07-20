@@ -405,7 +405,7 @@ def get_ib_data(user, ids, id_type):
                     sum(SERVICE_MAPPED_PRICE),
                     sum(INSTALLATION_QUANTITY),
                     sum(ANNUAL_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT),
-                    SUM(ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT),
+                    sum(ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT),
                     sum(ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT),
                     sum(ANNUALIZED_CONTRACT_LINE_NET_USD_AMOUNT),
                     sum(CONTRACT_LINE_LIST_USD_AMOUNT),
@@ -417,33 +417,165 @@ def get_ib_data(user, ids, id_type):
                     CON_SNTC_SSPT_OFFER_FLAG,
                     CON_CURRENT_SSPT_FLAG,
                     CON_COMMENTS,
-                    L12OS,
-                    L14HR,
-                    L14OS,
-                    L1DCP,
-                    L1DS,
-                    L1NB3,
-                    L1NB5,
-                    L1NBD,
-                    L1NCD,
-                    L1NCO,
-                    L1NOS,
-                    L1SWT,
-                    L22HR,
-                    L22OS,
-                    L24H3,
-                    L24H5,
-                    L24HR,
-                    L24OS,
-                    L2DCP,
-                    L2DS,
-                    L2NB3,
-                    L2NB5,
-                    L2NBD,
-                    L2NCD,
-                    L2NCO,
-                    L2NOS,
-                    L2SWT,
+                    sum(L12OS),
+                    sum(L14HR),
+                    sum(L14OS),
+                    sum(L1DCP),
+                    sum(L1DS),
+                    sum(L1NB3),
+                    sum(L1NB5),
+                    sum(L1NBD),
+                    sum(L1NCD),
+                    sum(L1NCO),
+                    sum(L1NOS),
+                    sum(L1SWT),
+                    sum(L22HR),
+                    sum(L22OS),
+                    sum(L24H3),
+                    sum(L24H5),
+                    sum(L24HR),
+                    sum(L24OS),
+                    sum(L2DCP),
+                    sum(L2DS),
+                    sum(L2NB3),
+                    sum(L2NB5),
+                    sum(L2NBD),
+                    sum(L2NCD),
+                    sum(L2NCO),
+                    sum(L2NOS),
+                    sum(L2SWT),
+                    SSPT_YORN,
+                    sum("3ECMU"),
+                    sum("3SC4P"),
+                    sum("3SNTP"),
+                    sum("3SSNP"),
+                    sum("3SSNT"),
+                    sum("5SC4P"),
+                    sum("5SNTP"),
+                    sum("5SSNP"),
+                    sum("5SSNT"),
+                    sum(ECMUS),
+                    sum(SSC2P),
+                    sum(SSC4P),
+                    sum(SSC4S),
+                    sum(SSCS),
+                    sum(SSDR5),
+                    sum(SSDR7),
+                    sum(SSNCO),
+                    sum(SSSNC),
+                    sum(SSSNE),
+                    sum(SSSNP),
+                    sum(SSSNT),
+                    sum("3C4P"),
+                    sum("3SNT"),
+                    sum("3SSNC"),
+                    sum("5SSNC"),
+                    sum(C2P),
+                    sum(C2PL),
+                    sum(C4P),
+                    sum(C4PL),
+                    sum(C4S),
+                    sum(CS),
+                    sum(CSAS),
+                    sum(OPTLD),
+                    sum(OSPT),
+                    sum(OSPTD),
+                    sum(OSPTL),
+                    sum(RFR),
+                    sum(S2P),
+                    sum(S2PL),
+                    sum(SNC),
+                    sum(SNT),
+                    sum(SNT90),
+                    sum(SNTE),
+                    sum(SNTP),
+                    sum(SNTPL),
+                    sum(SW),
+                    HTEC_OFFER_CATEGORY_L1,
+                    CS_SERVICE_LEVEL,
+                    CS_SPM_EQUIVALENT,
+                    CS_SNTC_OR_SSPT,
+                    CS_MULTIPLIER,
+                    CS_UPLIFT,
+                    PF_BAND            
+                    FROM "CX_DB"."CX_CA_BR"."BV_OE_IB_ASSET_VW"
+                    WHERE //ACCOUNT_IDENTIFIER = 'SAV'
+                    //AND 
+                    CUSTOMER_ID IN ({ids})
+                    group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,31,32,33,34,35,36,64,111,112,113,114,115,116,117
+                 """
+
+    cs.execute(query_ib)
+    df = cs.fetchall()
+    cs.close()
+    cnn.close()
+    
+    ib_df = pd.DataFrame(df)
+
+    ib_df.columns = ['customer_id', 
+                    'customer_name',
+                    'Best Site Sales Level 2 Name', 
+                    'Coverage', 
+                    'Contract Number', 
+                    'Covered Line Status', 
+                    'Contract Type', 
+                    'Contract Line End Quarter',
+                    'Contract Line End Fiscal Year', 
+                    'Instance Shipped Fiscal Year', 
+                    'Service Brand Code', 
+                    'Offer Type Name', 
+                    'Asset Type',
+                    'LDoS', 
+                    'LDoS Fiscal Quarter', 
+                    'LDoS FY', 
+                    'Business Entity Name', 
+                    'Sub Business Entity Name', 
+                    'Product Family',
+                    'Product ID', 
+                    'Product Type', 
+                    'Default Service List Price USD', 
+                    'Item Quantity',
+                    'Annual Extended Contract Line List USD Amount', 
+                    'Annual Contract Line Net USD Amount',
+                    'Annualized Extended Contract Line List USD Amount', 
+                    'Annualized Contract Line Net USD Amount',
+                    'Contract Line List Price USD', 
+                    'Contract Line Net Price USD',
+                    'Asset List Amount',
+                    'Part Number Example',
+                    'Description',
+                    'Convertsto',
+                    'SNTC SSPT Offer Flag',
+                    'Current SSPT Flag',
+                    'Comments',
+                    'L12OS',
+                    'L14HR',
+                    'L14OS',
+                    'L1DCP',
+                    'L1DS',
+                    'L1NB3',
+                    'L1NB5',
+                    'L1NBD',
+                    'L1NCD',
+                    'L1NCO',
+                    'L1NOS',
+                    'L1SWT',
+                    'L22HR',
+                    'L22OS',
+                    'L24H3',
+                    'L24H5',
+                    'L24HR',
+                    'L24OS',
+                    'L2DCP',
+                    'L2DS',
+                    'L2NB3',
+                    'L2NB5',
+                    'L2NBD',
+                    'L2NCD',
+                    'L2NCO',
+                    'L2NOS',
+                    'L2SWT',
+                    'Eligible',
                     "3ECMU",
                     "3SC4P",
                     "3SNTP",
@@ -453,114 +585,108 @@ def get_ib_data(user, ids, id_type):
                     "5SNTP",
                     "5SSNP",
                     "5SSNT",
-                    ECMUS,
-                    SSC2P,
-                    SSC4P,
-                    SSC4S,
-                    SSCS,
-                    SSDR5,
-                    SSDR7,
-                    SSNCO,
-                    SSSNC,
-                    SSSNE,
-                    SSSNP,
-                    SSSNT,
+                    'ECMUS',
+                    'SSC2P',
+                    'SSC4P',
+                    'SSC4S',
+                    'SSCS',
+                    'SSDR5',
+                    'SSDR7',
+                    'SSNCO',
+                    'SSSNC',
+                    'SSSNE',
+                    'SSSNP',
+                    'SSSNT',
+                    '3C4P',
                     "3SNT",
                     "3SSNC",
                     "5SSNC",
-                    C2P,
-                    C2PL,
-                    C4P,
-                    C4PL,
-                    C4S,
-                    CS,
-                    CSAS,
-                    OPTLD,
-                    OSPT,
-                    OSPTD,
-                    OSPTL,
-                    RFR,
-                    S2P,
-                    S2PL,
-                    SNC,
-                    SNT,
-                    SNT90,
-                    SNTE,
-                    SNTP,
-                    SNTPL,
-                    SW,
-                    HTEC_OFFER_CATEGORY_L1,
-                    CS_SERVICE_LEVEL,
-                    CS_SPM_EQUIVALENT,
-                    CS_SNTC_OR_SSPT,
-                    CS_MULTIPLIER,
-                    CS_UPLIFT            
-                    FROM "CX_DB"."CX_CA_BR"."BV_OE_IB_ASSET_VW"
-                    WHERE //ACCOUNT_IDENTIFIER = 'SAV'
-                    //AND 
-                    CUSTOMER_ID IN ({ids})
-                    group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,
-                    46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,
-                    94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114
-                 """
+                    'C2P',
+                    'C2PL',
+                    'C4P',
+                    'C4PL',
+                    'C4S',
+                    'CS',
+                    'CSAS',
+                    'OPTLD',
+                    'OSPT',
+                    'OSPTD',
+                    'OSPTL',
+                    'RFR',
+                    'S2P',
+                    'S2PL',
+                    'SNC',
+                    'SNT',
+                    'SNT90',
+                    'SNTE',
+                    'SNTP',
+                    'SNTPL',
+                    'SW',
+                    'Offer Category L1(CX FAST)',
+                    'Service Level',
+                    'SPM Equivalent',
+                    'SNTC/SSPT',
+                    'Multiplier',
+                    'Uplift',
+                    'ADJUSTED_CATEGORY']
 
-    cs.execute(query_ib)
-    df = cs.fetchall()
-    cs.close()
-    cnn.close()
+    ib_df = ib_df.astype({'customer_id': str, 
+                        'customer_name': str,
+                        'Best Site Sales Level 2 Name': str,
+                        'Coverage': str,
+                        #'Contract Number': int, # big_int
+                        'Covered Line Status': str,
+                        'Contract Type': str,
+                        'Contract Line End Quarter': int,
+                        'Contract Line End Fiscal Year': int,
+                        'Instance Shipped Fiscal Year': int,
+                        'Service Brand Code': str,
+                        'Offer Type Name': str,
+                        'Asset Type': str,
+                        #'LDoS':datetime,
+                        'LDoS Fiscal Quarter': str,
+                        #'LDoS FY': int,
+                        'Business Entity Name': str,
+                        'Sub Business Entity Name': str,
+                        'Product Family': str,
+                        'Product ID': str,
+                        'Product Type': str,
+                        'Default Service List Price USD': float,
+                        'Item Quantity': float,
+                        'Annual Extended Contract Line List USD Amount': float,
+                        'Annual Contract Line Net USD Amount': float,
+                        'Annualized Extended Contract Line List USD Amount': float,
+                        'Annualized Contract Line Net USD Amount': float,
+                        'Contract Line List Price USD': float,
+                        'Contract Line Net Price USD': float,
+                        'Asset List Amount': float})
+
+    ib_df['Contract Number']=ib_df['Contract Number'].fillna(0).apply(int)
+    ib_df['LDoS FY']=ib_df['LDoS FY'].fillna(1900).apply(int)
+    ib_df['LDoS']=ib_df['LDoS'].apply(lambda x: datetime.strptime(str(x) , '%Y-%m-%d') if pd.notna(x) else x)
+    
 
     # CURRENT_OWNER_CCO_ID
-    # INCIDENT_CONTACT_EMAIL  ## Deleted from the view made by Facundo
+    #INCIDENT_CONTACT_EMAIL  ## Deleted from the view made by Facundo
     if id_type == 'SAV':
-        ib_columns = ['SAV ID', 'SAV Name',
-                    'Best Site Sales Level 2 Name', 'Coverage', 'Contract Number', 'Covered Line Status', 'Contract Type', 'Contract Line End Quarter',
-                    'Contract Line End Fiscal Year', 'Instance Shipped Fiscal Year', 'Service Brand Code', 'Offer Type Name', 'Asset Type',
-                    'LDoS', 'LDoS Fiscal Quarter', 'LDoS FY', 'Business Entity Name', 'Sub Business Entity Name', 'Product Family',
-                    'Product ID', 'Product Type', 'Default Service List Price USD', 'Item Quantity',
-                    'Annual Extended Contract Line List USD Amount', 'Annual Contract Line Net USD Amount',
-                    'Annualized Extended Contract Line List USD Amount', 'Annualized Contract Line Net USD Amount',
-                    'Contract Line List Price USD', 'Contract Line Net Price USD','Asset List Amount','CON_PART_NUMBER',
-                    'Description','Convertsto','SNTC SSPT Offer Flag','Current SSPT Flag','Comments',
-                    'L12OS','L14HR','L14OS','L1DCP','L1DS','L1NB3','L1NB5','L1NBD','L1NCD','L1NCO','L1NOS','L1SWT','L22HR','L22OS','L24H3','L24H5','L24HR',
-                    'L24OS','L2DCP','L2DS','L2NB3','L2NB5','L2NBD','L2NCD','L2NCO','L2NOS','L2SWT',"3ECMU","3SC4P","3SNTP","3SSNP","3SSNT","5SC4P","5SNTP",
-                    "5SSNP","5SSNT",'ECMUS','SSC2P','SSC4P','SSC4S','SSCS','SSDR5','SSDR7','SSNCO','SSSNC','SSSNE','SSSNP','SSSNT',"3SNT","3SSNC","5SSNC",
-                    'C2P','C2PL','C4P','C4PL','C4S','CS','CSAS','OPTLD','OSPT','OSPTD','OSPTL','RFR','S2P','S2PL','SNC','SNT','SNT90','SNTE','SNTP','SNTPL',
-                    'SW','Offer Category L1(CX FAST)','Service Level','SPM Equivalent','SNTC/SSPT','Multiplier','Uplift']
+        ib_df.rename(columns={'customer_id': 'SAV ID', 
+                            'customer_name': 'SAV Name'},
+                            inplace=True)
 
     elif id_type == 'GU':
-        ib_columns = ['Best Site GU Party ID','Best Site GU Party Name','Best Site Sales Level 2 Name',
-                    'Coverage','Contract Number','Covered Line Status','Contract Type','Contract Line End Quarter',
-                    'Contract Line End Fiscal Year','Instance Shipped Fiscal Year','Service Brand Code','Offer Type Name',
-                    'Asset Type','LDoS','LDoS Fiscal Quarter','LDoS FY',
-                    'Business Entity Name','Sub Business Entity Name','Product Family','Product ID','Product Type',
-                    'Default Service List Price USD','Item Quantity',
-                    'Annual Extended Contract Line List USD Amount','Annual Contract Line Net USD Amount','Annualized Extended Contract Line List USD Amount',
-                    'Annualized Contract Line Net USD Amount',
-                    'Contract Line List Price USD','Contract Line Net Price USD','Asset List Amount']  
+        ib_df.rename(columns={'customer_id': 'Best Site GU Party ID', 
+                            'customer_name': 'Best Site GU Party Name'},
+                            inplace=True)
 
     elif id_type == 'CAV':
-        ib_columns = ['CAV - Account Name','CAV Name','Best Site Sales Level 2 Name',
-                    'Coverage','Contract Number','Covered Line Status','Contract Type','Contract Line End Quarter',
-                    'Contract Line End Fiscal Year','Instance Shipped Fiscal Year','Service Brand Code','Offer Type Name',
-                    'Asset Type','LDoS','LDoS Fiscal Quarter','LDoS FY',
-                    'Business Entity Name','Sub Business Entity Name','Product Family','Product ID','Product Type',
-                    'Default Service List Price USD','Item Quantity',
-                    'Annual Extended Contract Line List USD Amount','Annual Contract Line Net USD Amount','Annualized Extended Contract Line List USD Amount',
-                    'Annualized Contract Line Net USD Amount',
-                    'Contract Line List Price USD','Contract Line Net Price USD','Asset List Amount']
+        ib_df.rename(columns={'customer_id': 'CAV - Account Name', 
+                            'customer_name': 'CAV Name'},
+                            inplace=True)
 
     elif id_type == 'CR':
-        ib_columns = ['Best Site CR Party ID','Best Site CR Party Name','Best Site Sales Level 2 Name',
-                    'Coverage','Contract Number','Covered Line Status','Contract Type','Contract Line End Quarter',
-                    'Contract Line End Fiscal Year','Instance Shipped Fiscal Year','Service Brand Code','Offer Type Name',
-                    'Asset Type','LDoS','LDoS Fiscal Quarter','LDoS FY',
-                    'Business Entity Name','Sub Business Entity Name','Product Family','Product ID','Product Type',
-                    'Default Service List Price USD','Item Quantity',
-                    'Annual Extended Contract Line List USD Amount','Annual Contract Line Net USD Amount','Annualized Extended Contract Line List USD Amount',
-                    'Annualized Contract Line Net USD Amount',
-                    'Contract Line List Price USD','Contract Line Net Price USD','Asset List Amount']   
-
-    ib_df = pd.DataFrame(df, columns=ib_columns)
+        ib_df.rename(columns={'customer_id': 'Best Site CR Party ID', 
+                            'customer_name': 'Best Site CR Party Name'},
+                            inplace=True)
 
     return ib_df
 
@@ -2147,78 +2273,81 @@ def SNTC_Oppty(df, sntc_mapping):
 
 #Function that generates the CSV files
 
-def set_datasource(df,type,folder_path,contract_types_list,
-                    success_track_pricing_list,sspt_pricing_list_eligibleSSPT,
-                    sspt_pricing_list_outputTable,sntc_pricing_list,htec_contract_types_htec,
-                    htec_contract_types_swss,combined_services,product_banding):
+def set_datasource(df,type,folder_path
+                   ,contract_types_list,
+                   success_track_pricing_list,sspt_pricing_list_eligibleSSPT,
+                   sspt_pricing_list_outputTable,sntc_pricing_list,product_banding):
+                #    ,htec_contract_types_htec,
+                #    htec_contract_types_swss,combined_services,
 
     dataframe = df.copy()
     ## --------------------------------------------- IB
     if type == 'ib':
 
-        ib_cols = ['ID', 'Name', 'Best Site ID', 'Best Site Customer Name',
-                    'Best Site Sales Level 2 Name', 'Coverage', 'Contract Number', 'Covered Line Status', 'Contract Type', 'Contract Line End Quarter',
-                    'Contract Line End Fiscal Year', 'Instance Shipped Fiscal Year', 'Service Brand Code', 'Offer Type Name', 'Asset Type',
-                    'LDoS', 'LDoS Fiscal Quarter', 'LDoS FY', 'Business Entity Name', 'Sub Business Entity Name', 'Product Family',
-                    'Product ID', 'Product Type', 'Default Service List Price USD', 'Item Quantity',
-                    'Annual Extended Contract Line List USD Amount', 'Annual Contract Line Net USD Amount',
-                    'Annualized Extended Contract Line List USD Amount', 'Annualized Contract Line Net USD Amount',
-                    'Contract Line List Price USD', 'Contract Line Net Price USD','Asset List Amount','CON_PART_NUMBER',
-                    'Description','Convertsto','SNTC SSPT Offer Flag','Current SSPT Flag','Comments',
-                    'L12OS','L14HR','L14OS','L1DCP','L1DS','L1NB3','L1NB5','L1NBD','L1NCD','L1NCO','L1NOS','L1SWT','L22HR','L22OS','L24H3','L24H5','L24HR',
-                    'L24OS','L2DCP','L2DS','L2NB3','L2NB5','L2NBD','L2NCD','L2NCO','L2NOS','L2SWT',"3ECMU","3SC4P","3SNTP","3SSNP","3SSNT","5SC4P","5SNTP",
-                    "5SSNP","5SSNT",'ECMUS','SSC2P','SSC4P','SSC4S','SSCS','SSDR5','SSDR7','SSNCO','SSSNC','SSSNE','SSSNP','SSSNT',"3SNT","3SSNC","5SSNC",
-                    'C2P','C2PL','C4P','C4PL','C4S','CS','CSAS','OPTLD','OSPT','OSPTD','OSPTL','RFR','S2P','S2PL','SNC','SNT','SNT90','SNTE','SNTP','SNTPL',
-                    'SW','Offer Category L1(CX FAST)','Service Level','SPM Equivalent','SNTC/SSPT','Multiplier','Uplift']
+        # ib_cols = ['ID', 'Name', 'Best Site ID', 'Best Site Customer Name',
+        #             'Best Site Sales Level 2 Name', 'Coverage', 'Contract Number', 'Covered Line Status', 'Contract Type', 'Contract Line End Quarter',
+        #             'Contract Line End Fiscal Year', 'Instance Shipped Fiscal Year', 'Service Brand Code', 'Offer Type Name', 'Asset Type',
+        #             'LDoS', 'LDoS Fiscal Quarter', 'LDoS FY', 'Business Entity Name', 'Sub Business Entity Name', 'Product Family',
+        #             'Product ID', 'Product Type', 'Default Service List Price USD', 'Item Quantity',
+        #             'Annual Extended Contract Line List USD Amount', 'Annual Contract Line Net USD Amount',
+        #             'Annualized Extended Contract Line List USD Amount', 'Annualized Contract Line Net USD Amount',
+        #             'Contract Line List Price USD', 'Contract Line Net Price USD','Asset List Amount','CON_PART_NUMBER',
+        #             'Description','Convertsto','SNTC SSPT Offer Flag','Current SSPT Flag','Comments',
+        #             'L12OS','L14HR','L14OS','L1DCP','L1DS','L1NB3','L1NB5','L1NBD','L1NCD','L1NCO','L1NOS','L1SWT','L22HR','L22OS','L24H3','L24H5','L24HR',
+        #             'L24OS','L2DCP','L2DS','L2NB3','L2NB5','L2NBD','L2NCD','L2NCO','L2NOS','L2SWT','Eligible',"3ECMU","3SC4P","3SNTP","3SSNP","3SSNT","5SC4P","5SNTP",
+        #             "5SSNP","5SSNT",'ECMUS','SSC2P','SSC4P','SSC4S','SSCS','SSDR5','SSDR7','SSNCO','SSSNC','SSSNE','SSSNP','SSSNT','3C4P',"3SNT","3SSNC","5SSNC",
+        #             'C2P','C2PL','C4P','C4PL','C4S','CS','CSAS','OPTLD','OSPT','OSPTD','OSPTL','RFR','S2P','S2PL','SNC','SNT','SNT90','SNTE','SNTP','SNTPL',
+        #             'SW','Offer Category L1(CX FAST)','Service Level','SPM Equivalent','SNTC/SSPT','Multiplier','Uplift','ADJUSTED_CATEGORY']
 
-        dataframe.columns = ib_cols
+        # dataframe.columns = ib_cols
 
-        dataframe = dataframe.astype({'ID': int,
-                                        'Name': str,
-                                        'Best Site ID': float,  # double
-                                        'Best Site Customer Name': str,
-                                        'Best Site Sales Level 2 Name': str,
-                                        'Coverage': str,
-                                        'Contract Number': int,  # big_int
-                                        'Covered Line Status': str,
-                                        'Contract Type': str,
-                                        'Contract Line End Quarter': int,
-                                        'Contract Line End Fiscal Year': int,
-                                        'Instance Shipped Fiscal Year': int,
-                                        'Service Brand Code': str,
-                                        'Offer Type Name': str,
-                                        'Asset Type': str,
-                                        #'LDoS':datetime,
-                                        'LDoS Fiscal Quarter': str,
-                                        'LDoS FY': int,
-                                        'Business Entity Name': str,
-                                        'Sub Business Entity Name': str,
-                                        'Product Family': str,
-                                        'Product ID': str,
-                                        'Product Type': str,
-                                        #'SWSS Flag': str,
-                                        'Default Service List Price USD': float,
-                                        'Item Quantity': float,
-                                        'Annual Extended Contract Line List USD Amount': float,
-                                        'Annual Contract Line Net USD Amount': float,
-                                        'Annualized Extended Contract Line List USD Amount': float,
-                                        'Annualized Contract Line Net USD Amount': float,
-                                        'Contract Line List Price USD': float,
-                                        'Contract Line Net Price USD': float,
-                                        'Asset List Amount': float,
-                                        'L2NBD':float})
+        dataframe.rename(columns={dataframe.columns[0]:'ID', dataframe.columns[1]:'Name'},inplace=True)
 
-        dataframe['LDoS'] = dataframe['LDoS'].apply(lambda x: datetime.strptime(str(x) , '%Y-%m-%d %H:%M:%S') if pd.notna(x) else x)
+        # dataframe = dataframe.astype({'ID': int, 
+        #                                 'Name': str,
+        #                                 'Best Site ID': float,  # double
+        #                                 'Best Site Customer Name': str,
+        #                                 'Best Site Sales Level 2 Name': str,
+        #                                 'Coverage': str,
+        #                                 'Contract Number': int,  # big_int
+        #                                 'Covered Line Status': str,
+        #                                 'Contract Type': str,
+        #                                 'Contract Line End Quarter': int,
+        #                                 'Contract Line End Fiscal Year': int,
+        #                                 'Instance Shipped Fiscal Year': int,
+        #                                 'Service Brand Code': str,
+        #                                 'Offer Type Name': str,
+        #                                 'Asset Type': str,
+        #                                 #'LDoS':datetime,
+        #                                 'LDoS Fiscal Quarter': str,
+        #                                 'LDoS FY': int,
+        #                                 'Business Entity Name': str,
+        #                                 'Sub Business Entity Name': str,
+        #                                 'Product Family': str,
+        #                                 'Product ID': str,
+        #                                 'Product Type': str,
+        #                                 #'SWSS Flag': str,
+        #                                 'Default Service List Price USD': float,
+        #                                 'Item Quantity': float,
+        #                                 'Annual Extended Contract Line List USD Amount': float,
+        #                                 'Annual Contract Line Net USD Amount': float,
+        #                                 'Annualized Extended Contract Line List USD Amount': float,
+        #                                 'Annualized Contract Line Net USD Amount': float,
+        #                                 'Contract Line List Price USD': float,
+        #                                 'Contract Line Net Price USD': float,
+        #                                 'Asset List Amount': float})
+
+        # dataframe['LDoS'] = dataframe['LDoS'].apply(lambda x: datetime.strptime(str(x) , '%Y-%m-%d %H:%M:%S') if pd.notna(x) else x)
 
         #dataframe = dataframe.merge(contract_types_list, how='left', left_on='Contract Type',right_on='Contract Type', suffixes=('', ' (SNTCSolutionSupport)'))
         #dataframe = dataframe.merge(success_track_pricing_list, how='left', left_on='Product ID',right_on='Product SKU', suffixes=('', ' (Success Track PIDs)'))
-        dataframe = dataframe.merge(sspt_pricing_list_eligibleSSPT, how='left',left_on='Product ID', right_on='Product SKU', suffixes=('', ' (Eligible SSPT)'))
+        #dataframe = dataframe.merge(sspt_pricing_list_eligibleSSPT, how='left',left_on='Product ID', right_on='Product SKU', suffixes=('', ' (Eligible SSPT)'))
         #dataframe = dataframe.merge(sspt_pricing_list_outputTable, how='left',left_on='Product ID', right_on='Product SKU', suffixes=('', ' (Output Table)'))
         #dataframe = dataframe.merge(sntc_pricing_list, how='left', left_on='Product ID',right_on='Product SKU ', suffixes=('', ' (Output)'))
         #dataframe = dataframe.merge(htec_contract_types_swss, how='left',left_on='Contract Type', right_on='GSP', suffixes=('', ' (SWSS)'))
         #dataframe = dataframe.merge(htec_contract_types_htec, how='left',left_on='Contract Type', right_on='GSP', suffixes=('', ' (HTEC)'))
         #dataframe = dataframe.merge(combined_services, how='left',left_on='Contract Type', right_on='Combined Services Service Level')
-        dataframe = dataframe.merge(product_banding, how='left', left_on='Product Family', right_on='INTERNAL_BE_PRODUCT_FAMILY')
+        #dataframe = dataframe.merge(product_banding, how='left', left_on='Product Family', right_on='INTERNAL_BE_PRODUCT_FAMILY')
         dataframe.to_csv(folder_path, index=False)
 
     ## --------------------------------------------- Coverage
@@ -2667,6 +2796,7 @@ def ST_Oppty(IB):
     merge1 = IB.copy()
 
     #------------------------------------------------Calculating Success Tracks Column-------------------------------------------------
+    merge1['Product SKU'] = merge1['Product ID']
     merge1 = merge1.rename(columns={'Product SKU':'Success Tracks'})
     merge1['Success Tracks'] = merge1['Success Tracks'].fillna('Not Elegible')
 
@@ -2849,7 +2979,7 @@ def oppty_validation(oppty):
 #Calculation of smartnet value for PI's eligibles for Success Tracks
 
 def smartnet_total_care_NBD_list_price(ib):
-    ib = ib[~(pd.isna(ib['Product SKU']) | ib['Contract Type'].isin(['L1NB3','L1NB5','L1NBD','L1SWT','L24H3','L24H5','L24HR','L2NB3','L2NB5','L2NBD','L2SWT']))]
+    ib = ib[~(pd.isna(ib['Product ID']) | ib['Contract Type'].isin(['L1NB3','L1NB5','L1NBD','L1SWT','L24H3','L24H5','L24HR','L2NB3','L2NB5','L2NBD','L2SWT']))]
     ib = ib[ib['ADJUSTED_CATEGORY'].isin(['High','Medium'])]
     ib = ib[ib['Coverage'] == 'COVERED']
     smartnet_value = int(ib['Annualized Extended Contract Line List USD Amount'].sum())
@@ -2860,7 +2990,8 @@ def smartnet_total_care_NBD_list_price(ib):
 #Calculation of ST level 2 opportunity 
 
 def estimated_list_price(ib):
-    ib = ib[~(pd.isna(ib['Product SKU']) | ib['Contract Type'].isin(['L1NB3','L1NB5','L1NBD','L1SWT','L24H3','L24H5','L24HR','L2NB3','L2NB5','L2NBD','L2SWT']))]
+
+    ib = ib[~(pd.isna(ib['Product ID']) | ib['Contract Type'].isin(['L1NB3','L1NB5','L1NBD','L1SWT','L24H3','L24H5','L24HR','L2NB3','L2NB5','L2NBD','L2SWT']))]
     ib = ib[ib['ADJUSTED_CATEGORY'].isin(['High','Medium'])]
     ib = ib[ib['Coverage'] == 'COVERED']
     l2_swt = ib['L2SWT'].fillna(0) * ib['Item Quantity'].fillna(0)
