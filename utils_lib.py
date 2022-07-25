@@ -468,6 +468,7 @@ def get_ib_data(user, ids, id_type):
                     sum(SSSNT),
                     sum("3C4P"),
                     sum("3SNT"),
+                    sum("SSPT_3SNTP")
                     sum("3SSNC"),
                     sum("5SSNC"),
                     sum(C2P),
@@ -599,6 +600,7 @@ def get_ib_data(user, ids, id_type):
                     'SSSNT',
                     '3C4P',
                     "3SNT",
+                    "3SNTP (Output)",
                     "3SSNC",
                     "5SSNC",
                     'C2P',
