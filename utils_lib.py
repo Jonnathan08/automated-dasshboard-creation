@@ -17,7 +17,7 @@ from tableauhyperapi import HyperProcess, Telemetry, \
     Inserter, \
     escape_name, escape_string_literal, \
     HyperException
-from tenacity import retry_if_not_result
+#from tenacity import retry_if_not_result
 
 warnings.filterwarnings("ignore")
 
@@ -681,8 +681,8 @@ def get_ib_data(user, ids, id_type):
                             inplace=True)
 
     elif id_type == 'CAV':
-        ib_df.rename(columns={'customer_id': 'CAV - Account Name', 
-                            'customer_name': 'CAV Name'},
+        ib_df.rename(columns={'customer_id': 'CAV ID', 
+                            'customer_name': 'CAV - Account Name'},
                             inplace=True)
 
     elif id_type == 'CR':
@@ -746,7 +746,7 @@ def get_coverage_data(user, ids, id_type):
                         'ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT','Contract Line Net Price USD','ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT']
 
     elif id_type == 'CAV':
-        coverage_columns = ['CAV - Account Name','CAV Name','Coverage','Item Quantity','Asset List Amount','Asset Net Amount',
+        coverage_columns = ['CAV ID','CAV - Account Name','Coverage','Item Quantity','Asset List Amount','Asset Net Amount',
                         'ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT','Contract Line Net Price USD','ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT']
 
     elif id_type == 'CR':
