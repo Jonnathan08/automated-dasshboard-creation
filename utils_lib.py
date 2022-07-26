@@ -468,7 +468,7 @@ def get_ib_data(user, ids, id_type):
                     sum(SSSNT),
                     sum("3C4P"),
                     sum("3SNT"),
-                    sum("SSPT_3SNTP")
+                    sum("SSPT_3SNTP"),
                     sum("3SSNC"),
                     sum("5SSNC"),
                     sum(C2P),
@@ -503,7 +503,7 @@ def get_ib_data(user, ids, id_type):
                     WHERE //ACCOUNT_IDENTIFIER = 'SAV'
                     //AND 
                     CUSTOMER_ID IN ({ids})
-                    group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,31,32,33,34,35,36,64,111,112,113,114,115,116,117
+                    group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,31,32,33,34,35,36,64,112,113,114,115,116,117,118
                  """
 
     cs.execute(query_ib)
