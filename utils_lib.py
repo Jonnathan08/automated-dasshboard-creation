@@ -2429,7 +2429,6 @@ def set_datasource(df,type,folder_path
         dataframe = dataframe.merge(st, how='left', left_on='Product ID',right_on='Product SKU', suffixes=('', ' (Success Track PIDs)'))
         sp = sspt_pricing_list_outputTable[['Product SKU','ELSUS','SSPTS','SSS2P','SSTCM','SSSW']]
         dataframe = dataframe.merge(sp, how='left',left_on='Product ID', right_on='Product SKU', suffixes=('', ' (Output Table)'))
-
         dataframe.to_csv(folder_path, index=False)
 
     ## --------------------------------------------- Coverage
@@ -2453,6 +2452,7 @@ def set_datasource(df,type,folder_path
                                         'Contract Line Net Price USD': float,
                                         'Annualized Extended Contract Line List USD Amount': float
                                     })
+
 
         dataframe.to_csv(folder_path, index=False)
 
@@ -3017,7 +3017,7 @@ def IB_attributes(IB):
 #Assign color function for Q&A dataframe
 
 def color_qa(value):
-    if value in ['Incorrect', 'Negative Value','Empty Value', 'Big value','QA Package Info']:
+    if value in ['Incorrect', 'Negative Value','Empty Value', 'Big value','QA Package Info', 'No IB data', 'No data']:
         color = 'red'
     else:
         color = 'green'
@@ -3034,7 +3034,7 @@ def ib_value_validation(data):
         else:
             return("Correct")
     except:
-        return("Correct")   
+        return("No IB data")
 
 #Validation of coverage percentage between the correct range
 
@@ -3045,7 +3045,7 @@ def ib_covered_validation(data):
         else: 
             return('Incorrect')
     except:
-        return('Correct')
+        return('No IB data')
 
 
 #Validation for empty values of Mayor Renewal 
@@ -3057,7 +3057,7 @@ def rw_validation(data):
         else:
             return('Correct')
     except:
-        return('Correct')
+        return('No IB data')
 
 
 #Validation for negative values 
@@ -3069,7 +3069,7 @@ def oppty_validation(oppty):
         else:
             return('Negative Value')
     except:
-        return('Correct')
+        return('No data')
 
 #Calculation of smartnet value for PI's eligibles for Success Tracks
 
@@ -3129,7 +3129,7 @@ def lenght_validation(number, lenght=8):
         else:
             return('Correct')
     except:
-        return('Correct')
+        return('No data')
 
 def smartsheet_len_info(df):
     
