@@ -2467,10 +2467,11 @@ def smartnet_verification(ib):
 
 #Calculation of IB value, IB covered and Mayor Renewal 
 
-def IB_attributes(IB):
+def IB_attributes(IB, Coverage):
     
 # ------------------------------------------------------------------Calculating IB-----------------------------------------------------------------------------------
-    data = IB.groupby([IB['ID'],IB['Coverage'][IB['Coverage']=='COVERED']])[['Asset List Amount']].sum()
+    data = Coverage.groupby([Coverage['ID'],Coverage['Coverage'][Coverage['Coverage']=='COVERED']])['Asset List Amount'].sum()
+    #data = IB.groupby([IB['ID'],IB['Coverage'][IB['Coverage']=='COVERED']])[['Asset List Amount']].sum()
     data = data.reset_index()
     data = data.rename(columns={'Asset List Amount':'IB Value'})
     data = data.drop(labels='Coverage', axis=1)
@@ -2478,7 +2479,7 @@ def IB_attributes(IB):
     
 
 # ------------------------------------------------------------------Calculating % coverage------------------------------------------------------------------------------
-    a = IB.groupby([IB['ID']])[['Asset List Amount']].sum()
+    a = Coverage.groupby([Coverage['ID']])[['Asset List Amount']].sum()
     a = a.reset_index()
     a = a.rename(columns={'Asset List Amount':'IB Total'})
     data= data.merge(a,right_on="ID",left_on="ID", how='left')
@@ -2490,6 +2491,8 @@ def IB_attributes(IB):
 #---------------------------------------------------------------Calculating Mayor Renewal -----------------------------------------------------------------------------
 
     IB['Annual Extended Contract Line List USD Amount'] = IB['Annual Extended Contract Line List USD Amount'].astype(float) 
+    IB['ID'] = IB['ID'].astype(str) 
+
     g = IB.groupby([IB['ID'],IB['Contract Line End Quarter']])['Annual Extended Contract Line List USD Amount'].sum()
     g = g.reset_index()
     g['Contract Line End Quarter'] = g['Contract Line End Quarter'].astype(str)
@@ -2501,6 +2504,7 @@ def IB_attributes(IB):
         j = g[g['Annual Extended Contract Line List USD Amount'] == i].iloc[0,1]
         lis2.append(j)
 
+    #print(f'Tipo de ID IB {data['ID'].apply(type))}')
 
     df_mayor_ren=h.reset_index()
     df_mayor_ren['Mayor Renewal'] = lis2
