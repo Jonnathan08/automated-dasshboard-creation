@@ -364,6 +364,7 @@ def get_ib_data(user, ids, id_type):
 
     param: user - cisco e-mail address
     param: sav_ids - list of given sav ids"""
+
     id_type = str(id_type)
 
     if ids == '':
@@ -500,12 +501,12 @@ def get_ib_data(user, ids, id_type):
                     CS_UPLIFT,
                     PF_BAND            
                     FROM "CX_DB"."CX_CA_BR"."BV_OE_IB_ASSET_VW"
-                    WHERE //ACCOUNT_IDENTIFIER = 'SAV'
-                    //AND 
+                    WHERE ACCOUNT_IDENTIFIER = '{id_type}'
+                    AND 
                     CUSTOMER_ID IN ({ids})
                     group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,31,32,33,34,35,36,64,112,113,114,115,116,117,118
                  """
-
+    
     cs.execute(query_ib)
     df = cs.fetchall()
     cs.close()
@@ -2429,9 +2430,7 @@ def set_datasource(df,type,folder_path
         dataframe = dataframe.merge(st, how='left', left_on='Product ID',right_on='Product SKU', suffixes=('', ' (Success Track PIDs)'))
         sp = sspt_pricing_list_outputTable[['Product SKU','ELSUS','SSPTS','SSS2P','SSTCM','SSSW']]
         dataframe = dataframe.merge(sp, how='left',left_on='Product ID', right_on='Product SKU', suffixes=('', ' (Output Table)'))
-        if len(dataframe)>0:    
-            dataframe = contract_type_sspt_filter(dataframe)
-            
+           
         dataframe.to_csv(folder_path, index=False)
 
     ## --------------------------------------------- Coverage
@@ -2698,6 +2697,9 @@ def SSPT_Oppty(IB):
         merge['LDoS Flag']=''
         merge['LDoS Flag']= LDoS_flag( merge['LDoS'])
         #merge[['LDoS','LDoS Flag']][merge['LDoS Flag']=='N']
+
+        # merge = contract_type_sspt_filter(merge)
+        # merge = merge[merge['Current_Contract_Type_SP_Filter'] == True]
 
         def select_data_to_display(LDoS_flag,cover_lin_status,eligible,coverage):
             value = ''
@@ -3076,6 +3078,7 @@ def oppty_validation(oppty):
 #Calculation of smartnet value for PI's eligibles for Success Tracks
 
 def smartnet_total_care_NBD_list_price(ib):
+
     def contract_type_filter(l2nbd,l2swt,annual_extended):
         estimated_l2 = l2nbd+l2swt
         filter = estimated_l2-annual_extended
@@ -3147,6 +3150,7 @@ def smartsheet_len_info(df):
     
 
 def contract_type_sspt_filter(df):
+
     ib_df = df.copy()
     ib_df['Uplift sspt'] = pd.NaT
     ib_df['Uplift sspt'] = ib_df[['Contract Type','SSC2P','SSSNT','Uplift sspt']].apply(lambda x: 1 if x[0] == 'C2P' else x[3], axis=1)
@@ -3213,6 +3217,6 @@ def contract_type_sspt_filter(df):
     ib_df['Annualized Extended Contract Line List USD Amount'] = ib_df['Annualized Extended Contract Line List USD Amount'].fillna(0)
     ib_df['Current_Contract_Type_SP_Filter'] = ib_df[['Uplift sspt','Annualized Extended Contract Line List USD Amount']].apply(lambda x: True if (x[0]-x[1]) > 0 else False, axis=1)
 
-    ib_df.drop(columns=['cs multiplier sl','CS SSPT (Multiplier)','Uplift sspt'], inplace=True)
+    #ib_df.drop(columns=['cs multiplier sl','CS SSPT (Multiplier)','Uplift sspt'], inplace=True)
 
     return ib_df
