@@ -1,5 +1,7 @@
 from ast import NotIn
 from csv import excel
+from heapq import merge
+from pickle import FALSE, TRUE
 import warnings
 from matplotlib.pyplot import axis
 
@@ -633,6 +635,88 @@ def get_ib_data(user, ids, id_type):
                     'Uplift',
                     'ADJUSTED_CATEGORY']
 
+    ib_df[['L12OS',
+                'L14HR',
+                'L14OS',
+                'L1DCP',
+                'L1DS',
+                'L1NB3',
+                'L1NB5',
+                'L1NBD',
+                'L1NCD',
+                'L1NCO',
+                'L1NOS',
+                'L1SWT',
+                'L22HR',
+                'L22OS',
+                'L24H3',
+                'L24H5',
+                'L24HR',
+                'L24OS',
+                'L2DCP',
+                'L2DS',
+                'L2NB3',
+                'L2NB5',
+                'L2NBD',
+                'L2NCD',
+                'L2NCO',
+                'L2NOS',
+                'L2SWT',
+                "3ECMU",
+                "3SC4P",
+                "3SNTP",
+                "3SSNP",
+                "3SSNT",
+                "5SC4P",
+                "5SNTP",
+                "5SSNP",
+                "5SSNT",
+                'ECMUS',
+                'SSC2P',
+                'SSC4P',
+                'SSC4S',
+                'SSCS',
+                'SSDR5',
+                'SSDR7',
+                'SSNCO',
+                'SSSNC',
+                'SSSNE',
+                'SSSNP',
+                'SSSNT',
+                '3C4P',
+                "3SNT",
+                "3SNTP (Output)",
+                "3SSNC",
+                "5SSNC",
+                'C2P',
+                'C2PL',
+                'C4P',
+                'C4PL',
+                'C4S',
+                'CS',
+                'CSAS',
+                'OPTLD',
+                'OSPT',
+                'OSPTD',
+                'OSPTL',
+                'RFR',
+                'S2P',
+                'S2PL',
+                'SNC',
+                'SNT',
+                'SNT90',
+                'SNTE',
+                'SNTP',
+                'SNTPL',
+                'SW']].fillna(0, inplace=True)
+
+    ib_df['Contract Number']=ib_df['Contract Number'].fillna(0).apply(int)
+    ib_df['LDoS FY']=ib_df['LDoS FY'].fillna(1900).apply(int)
+    ib_df['LDoS']=ib_df['LDoS'].apply(lambda x: datetime.strptime(str(x) , '%Y-%m-%d') if pd.notna(x) else x)
+    ib_df['Contract Line End Quarter']=ib_df['Contract Line End Quarter'].fillna(19009)
+    ib_df['Contract Line End Fiscal Year']=ib_df['Contract Line End Fiscal Year'].fillna(900)
+    ib_df['Instance Shipped Fiscal Year']=ib_df['Instance Shipped Fiscal Year'].fillna(1900)
+
     ib_df = ib_df.astype({'customer_id': str, 
                         'customer_name': str,
                         'Best Site Sales Level 2 Name': str,
@@ -739,84 +823,6 @@ def get_ib_data(user, ids, id_type):
                         'SW':float,
                         'Multiplier':float})
 
-    ib_df[['L12OS',
-                'L14HR',
-                'L14OS',
-                'L1DCP',
-                'L1DS',
-                'L1NB3',
-                'L1NB5',
-                'L1NBD',
-                'L1NCD',
-                'L1NCO',
-                'L1NOS',
-                'L1SWT',
-                'L22HR',
-                'L22OS',
-                'L24H3',
-                'L24H5',
-                'L24HR',
-                'L24OS',
-                'L2DCP',
-                'L2DS',
-                'L2NB3',
-                'L2NB5',
-                'L2NBD',
-                'L2NCD',
-                'L2NCO',
-                'L2NOS',
-                'L2SWT',
-                "3ECMU",
-                "3SC4P",
-                "3SNTP",
-                "3SSNP",
-                "3SSNT",
-                "5SC4P",
-                "5SNTP",
-                "5SSNP",
-                "5SSNT",
-                'ECMUS',
-                'SSC2P',
-                'SSC4P',
-                'SSC4S',
-                'SSCS',
-                'SSDR5',
-                'SSDR7',
-                'SSNCO',
-                'SSSNC',
-                'SSSNE',
-                'SSSNP',
-                'SSSNT',
-                '3C4P',
-                "3SNT",
-                "3SNTP (Output)",
-                "3SSNC",
-                "5SSNC",
-                'C2P',
-                'C2PL',
-                'C4P',
-                'C4PL',
-                'C4S',
-                'CS',
-                'CSAS',
-                'OPTLD',
-                'OSPT',
-                'OSPTD',
-                'OSPTL',
-                'RFR',
-                'S2P',
-                'S2PL',
-                'SNC',
-                'SNT',
-                'SNT90',
-                'SNTE',
-                'SNTP',
-                'SNTPL',
-                'SW']].fillna(0, inplace=True)
-
-    ib_df['Contract Number']=ib_df['Contract Number'].fillna(0).apply(int)
-    ib_df['LDoS FY']=ib_df['LDoS FY'].fillna(1900).apply(int)
-    ib_df['LDoS']=ib_df['LDoS'].apply(lambda x: datetime.strptime(str(x) , '%Y-%m-%d') if pd.notna(x) else x)
     
     if id_type == 'SAV':
         ib_df.rename(columns={'customer_id': 'SAV ID', 
@@ -2747,125 +2753,15 @@ def SSPT_Oppty(IB):
         #Arquitecture: All
         #Product Family: All
 
-        # Calculando - CS Multiplier SL
-        merge['CS Multiplier SL'] = ''
         merge = merge.reset_index()
-        
-        #if merge.shape[0] != 0:
-        def service_level(ib):
-            
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSS2P']].apply(lambda x: x[2] if x[0] == '24x7x2' else x[1], axis=1)
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSC2P']].apply(lambda x: x[2] if x[0] == '24x7x2OS' else x[1], axis=1)
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSNP']].apply(lambda x: x[2] if x[0] == '24x7x4' else x[1], axis=1)
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSC4P']].apply(lambda x: x[2] if x[0] == '24x7x4OS' else x[1], axis=1)
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSNE']].apply(lambda x: x[2] if x[0] == '8x5x4' else x[1], axis=1)
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSC4S']].apply(lambda x: x[2] if x[0] == '8x5x4OS' else x[1], axis=1)
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSNT']].apply(lambda x: x[2] if x[0] == 'NBD' else x[1], axis=1) 
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSCS']].apply(lambda x: x[2] if x[0] == '8x5xNDBOS' else x[1], axis=1)       
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSDR7']].apply(lambda x: x[2] if x[0] == 'DR 24x7x4OS' else x[1], axis=1)
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSDR5']].apply(lambda x: x[2] if x[0] == 'DR 8x5xNDBOS' else x[1], axis=1)
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSW']].apply(lambda x: x[2] if x[0] == 'SNTC NO RMA' else x[1], axis=1)
-            ib['CS Multiplier SL'] = ib[['Service Level','CS Multiplier SL','SSSW']].apply(lambda x: 0 if x[0] not in ['24x7x2','24x7x2OS','24x7x4','24x7x4OS','8x5x4','8x5x4OS','NBD','8x5xNDBOS','DR 24x7x4OS','DR 8x5xNDBOS','SNTC NO RMA'] else x[1], axis=1)
 
-        service_level(merge)
-    
-        # Calculando - CS SSPT (Multiplier)
-        merge['CS SSPT (Multiplier)'] = 0
-        merge['CS SSPT (Multiplier)'] = merge[['Uplift','CS SSPT (Multiplier)','CS Multiplier SL','Multiplier']].apply(lambda x: 0 if x[0] == '' else x[2]*x[3], axis=1)
-
-    # Calculando - Uplift Recommended SL $
-    
-        merge['Uplift Recommended SL $']= ''
-        lista = ['SNCO','PSUP','C2P','3C4P','C4P','C4S','CS','UCSD5','UCSD7','S2P','SNTE','SNTP','3SNT','5SNT','SNT','PSRT','PSUT','LSNT']
-        lista2 = ['SPAR1','SPAR2','SPAR3','SPAR4','SPC2P','SBAR1','SPCS']
-        lista3 = ['ECDN','ECDO']
-
-        merge = merge.reset_index()
-    
-        def uplift_recommended_sl(contract_type,item_quantity,ssc2p,ssc4p,ssc4s,sscs,ssdr5,
-                            ssdr7,sss2p,sssne,sssnp,sssnt,sssw,ecmus,sntc_sspt_offer_flag,cs_sspt_multiplier,
-                            ssnco,sssnc):
-            value = 0
-
-            if (contract_type == 'C2P') & (ssc2p != 0):
-                value = ssc2p
-            elif (contract_type == '3C4P') & (ssc4p != 0):
-                        value = ssc4p    
-            elif (contract_type == 'C4P') & (ssc4p != 0):
-                value = ssc4p
-            elif (contract_type == 'C4S') & (ssc4s != 0):
-                value = ssc4s
-            elif (contract_type == 'CS') & (sscs != 0):
-                value = sscs
-            elif (contract_type == 'UCSD5') & (ssdr5 != 0):
-                value = ssdr5    
-            elif (contract_type == 'UCSD7') & (ssdr7 != 0):
-                value = ssdr7
-            elif (contract_type == 'S2P') & (sss2p != 0):
-                value = sss2p
-            elif (contract_type == 'SNTE') & (sssne != 0):
-                value = sssne
-            elif (contract_type == '3SNTP') & (sssnp != 0):
-                value = sssnp
-            elif (contract_type == 'SNTP') & (sssnp != 0):
-                value = sssnp
-            elif (contract_type == '5SNTP') & (sssnp != 0):
-                value = sssnp
-            elif (contract_type == 'SW') & (sssnt != 0):
-                value = sssnt   
-            elif (contract_type == 'SW') & (sssw != 0):
-                value = sssw
-            elif (contract_type == 'ECMU') & (ecmus != 0):
-                value = ecmus
-            elif (sntc_sspt_offer_flag == 'Combined Services'):
-                value = cs_sspt_multiplier   
-            elif (contract_type == 'PSUP') & (sssnp != 0):
-                value = sssnp    
-            elif (contract_type == 'SNCO') & (ssnco != 0):
-                value = ssnco 
-            elif (contract_type == 'SNC') & (sssnc != 0):
-                value = sssnc 
-            elif (contract_type == 'SPAR2') & (sntc_sspt_offer_flag == 'SP Base')& (sssne != 0):
-                value = sssne     
-            elif (contract_type == 'SPAR3') & (sntc_sspt_offer_flag == 'SP Base')& (sssnp != 0):
-                value = sssnp 
-            elif (contract_type == 'SPAR4') & (sntc_sspt_offer_flag == 'SP Base')& (sss2p != 0):
-                value = sss2p
-            elif (contract_type == 'SPC2P') & (sntc_sspt_offer_flag == 'SP Base')& (ssc2p != 0):
-                value = ssc2p
-            elif (contract_type == 'SPC4P') & (sntc_sspt_offer_flag == 'SP Base'):
-                value = ssc4p
-            elif (contract_type == 'SPCS') & (sntc_sspt_offer_flag == 'SP Base')& (sscs != 0):
-                value = sscs
-            elif (contract_type == 'ECDN') & (sntc_sspt_offer_flag == 'TELEPRESENCE CUSTOMERS'):
-                value = sssnt         
-            elif (contract_type == 'ECDO') & (sntc_sspt_offer_flag == 'TELEPRESENCE CUSTOMERS'):
-                value = sscs          
-            elif (contract_type in lista )& (sssnt != 0):
-                value = sssnt
-            elif (contract_type in lista2) & (sntc_sspt_offer_flag == 'SP Base')& (sssnt != 0):
-                value = sssnt    
-            else:
-                value = 0
-
-            return value
-
-        merge['Uplift Recommended SL $'] = merge[['Contract Type','Item Quantity','SSC2P','SSC4P','SSC4S','SSCS','SSDR5',
-                                                'SSDR7','SSS2P','SSSNE','SSSNP','SSSNT','SSSW','ECMUS','SNTC SSPT Offer Flag',
-                                                'CS SSPT (Multiplier)','SSNCO','SSSNC'
-                                                ]].apply(lambda x: uplift_recommended_sl(x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10], 
-                                                                                        x[11], x[12], x[13], x[14], x[15],x[16],x[17]), axis=1)
-        
-        # else:
-        #     merge['Uplift Recommended SL $'] = 0
-        #     print('No data')
+        Uplift = Uplift_Recommended_SL(merge)
 
         merge2 = merge
 
+        SP_Oppty1 =(Uplift - (merge2['Annualized Extended Contract Line List USD Amount'].sum()))
 
-        SP_Oppty1 = round(((merge2['Uplift Recommended SL $'].sum()) - (merge2['Annualized Extended Contract Line List USD Amount'].sum()))/1000,1)
-
-        return SP_Oppty1
+        return round(SP_Oppty1,1)
 
 #Calculation of Success Tracks oppty
 
@@ -2882,22 +2778,11 @@ def ST_Oppty(IB):
     #Loading necesary files
     merge1 = IB.copy()
 
-    def contract_type_filter(l2nbd,l2swt,annual_extended):
-        estimated_l2 = l2nbd+l2swt
-        filter = estimated_l2-annual_extended
-        if filter < 0:
-            return 0
-        else:
-            return 1
-
-    if len(merge1) > 0:
-        merge1['contract_type_filter'] = merge1[['L2NBD','L2SWT','Annualized Extended Contract Line List USD Amount']].apply(lambda x: contract_type_filter(x[0],x[1],x[2]), axis=1)
-        merge1 = merge1[merge1['contract_type_filter'] == 1]
-
     #------------------------------------------------Calculating Success Tracks Column-------------------------------------------------
     merge1['Product SKU'] = merge1['Product ID']
     merge1 = merge1.rename(columns={'Product SKU':'Success Tracks'})
     merge1['Success Tracks'] = merge1['Success Tracks'].fillna('Not Elegible')
+    merge1['Item Quantity'].fillna(0, inplace=True)
 
     if len(merge1) == 0:
         return 'N/A'
@@ -2933,26 +2818,29 @@ def ST_Oppty(IB):
 
         #-----------------------------------------------Calculating ST Estimated List Price-----------------------------------------------
         #merge1['ST Estimated List Price'] = (merge1['L2NBD'] + merge1['L2SWT'])*merge1['Item Quantity']
-        merge1['ST Estimated List Price'] = merge1['L2NBD']
-
+        merge1['L2 SWT'] = merge1['L2SWT']*merge1['Item Quantity']
+        merge1['Estimated L2 Scv'] = merge1['L2NBD']+merge1['L2 SWT']
+        merge1['ST Estimated List Price'] = merge1['Estimated L2 Scv'] * merge1['Item Quantity']
+        
         #------------------------------------------------------Filtering------------------------------------------------------------------
         merge1 = merge1[merge1['Coverage'] == 'COVERED']
         merge1 = merge1[merge1['Success Tracks'] == 'Elegible']
         #filtro product banding
-        merge12=merge1[merge1["ADJUSTED_CATEGORY"]=='High']
-        merge13=merge1[merge1["ADJUSTED_CATEGORY"]=='Mid']
-        
-        merge1=pd.concat([merge12,merge13])
+        merge1=merge1[merge1["ADJUSTED_CATEGORY"].isin(['High','Mid'])]
+
+        merge1['Contract type filter'] = merge1['ST Estimated List Price'] - merge1['Annualized Extended Contract Line List USD Amount']
+        merge1['Contract type filter'] = merge1['Contract type filter'].apply(lambda x: 'False' if x < 0 else 'True')
+        merge1 = merge1[merge1['Contract type filter']=='True']
 
         #----------------------------------------Calculating Total ST Oppty KPI------------------------------------------------------------
 
         sn_nbd_st_e = merge1['SmartNet NBD ST Eligible'].sum()
         sn_st_not_covered = merge1['SmartNet ST Not Covered'].sum()
         st_e_list_price = merge1['ST Estimated List Price'].sum()
-        ST_Oppty1= round (((st_e_list_price - sn_st_not_covered - sn_nbd_st_e)/1000),1)
+        ST_Oppty1= round (((st_e_list_price - sn_st_not_covered - sn_nbd_st_e)),1)
        
 
-        return ST_Oppty1
+        return  ST_Oppty1
 
 
 #Calculation of Expert Care oppty
@@ -3079,17 +2967,12 @@ def oppty_validation(oppty):
 
 def smartnet_total_care_NBD_list_price(ib):
 
-    def contract_type_filter(l2nbd,l2swt,annual_extended):
-        estimated_l2 = l2nbd+l2swt
-        filter = estimated_l2-annual_extended
-        if filter < 0:
-            return 0
-        else:
-            return 1
-
-    if len(ib) > 0:
-        ib['contract_type_filter'] = ib[['L2NBD','L2SWT','Annualized Extended Contract Line List USD Amount']].apply(lambda x: contract_type_filter(x[0],x[1],x[2]), axis=1)
-        ib = ib[ib['contract_type_filter'] == 1]
+    ib['L2 SWT'] = ib['L2SWT']*ib['Item Quantity']
+    ib['Estimated L2 Scv'] = ib['L2NBD']+ib['L2 SWT']
+    ib['ST Estimated List Price'] = ib['Estimated L2 Scv'] * ib['Item Quantity']
+    ib['Contract type filter'] = ib['ST Estimated List Price'] - ib['Annualized Extended Contract Line List USD Amount']
+    ib['Contract type filter'] = ib['Contract type filter'].apply(lambda x: 'False' if x < 0 else 'True')
+    ib = ib[ib['Contract type filter']=='True']
 
     ib = ib[~(pd.isna(ib['Product ID']) | ib['Contract Type'].isin(['L1NB3','L1NB5','L1NBD','L1SWT','L24H3','L24H5','L24HR','L2NB3','L2NB5','L2NBD','L2SWT']))]
     ib = ib[ib['ADJUSTED_CATEGORY'].isin(['High','Mid'])]
@@ -3104,23 +2987,17 @@ def smartnet_total_care_NBD_list_price(ib):
 def estimated_list_price(ib):
 
     #Current Contract Type Filter
-    def contract_type_filter(l2nbd,l2swt,annual_extended):
-        estimated_l2 = l2nbd+l2swt
-        filter = estimated_l2-annual_extended
-        if filter < 0:
-            return 0
-        else:
-            return 1
-
-    if len(ib) > 0:
-        ib['contract_type_filter'] = ib[['L2NBD','L2SWT','Annualized Extended Contract Line List USD Amount']].apply(lambda x: contract_type_filter(x[0],x[1],x[2]), axis=1)
-        ib = ib[ib['contract_type_filter'] == 1]
+    ib['L2 SWT'] = ib['L2SWT']*ib['Item Quantity']
+    ib['Estimated L2 Scv'] = ib['L2NBD']+ib['L2 SWT']
+    ib['ST Estimated List Price'] = ib['Estimated L2 Scv'] * ib['Item Quantity']
+    ib['Contract type filter'] = ib['ST Estimated List Price'] - ib['Annualized Extended Contract Line List USD Amount']
+    ib['Contract type filter'] = ib['Contract type filter'].apply(lambda x: 'False' if x < 0 else 'True')
+    ib = ib[ib['Contract type filter']=='True']
 
     ib = ib[~(pd.isna(ib['Product ID']) | ib['Contract Type'].isin(['L1NB3','L1NB5','L1NBD','L1SWT','L24H3','L24H5','L24HR','L2NB3','L2NB5','L2NBD','L2SWT']))]
     ib = ib[ib['ADJUSTED_CATEGORY'].isin(['High','Mid'])]
     ib = ib[ib['Coverage'] == 'COVERED']
-    l2_swt = ib['L2SWT'].fillna(0)
-    estimated_value = int(sum((ib['L2NBD'].fillna(0) + l2_swt)))
+    estimated_value = ib['ST Estimated List Price'].sum()
     lent = len(str(estimated_value))
     return estimated_value, lent
 
@@ -3149,11 +3026,11 @@ def smartsheet_len_info(df):
         return 'Correct'
     
 
-def contract_type_sspt_filter(df):
+def Uplift_Recommended_SL(df):
 
     ib_df = df.copy()
     ib_df['Uplift sspt'] = pd.NaT
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSC2P','SSSNT','Uplift sspt']].apply(lambda x: 1 if x[0] == 'C2P' else x[3], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSC2P','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'C2P' else x[3], axis=1)
     ib_df['Uplift sspt'] = ib_df[['Contract Type','SSC4P','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] in ['3C4P','C4P','C4S'] else x[3], axis=1)
     ib_df['Uplift sspt'] = ib_df[['Contract Type','SSCS','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'CS' else x[3], axis=1)
     ib_df['Uplift sspt'] = ib_df[['Contract Type','SSDR5','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'UCSD5' else x[3], axis=1)
@@ -3214,9 +3091,9 @@ def contract_type_sspt_filter(df):
     ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'LSNT' else x[2], axis=1)
 
     ib_df['Uplift sspt'] = ib_df['Uplift sspt'].fillna(0)
-    ib_df['Annualized Extended Contract Line List USD Amount'] = ib_df['Annualized Extended Contract Line List USD Amount'].fillna(0)
-    ib_df['Current_Contract_Type_SP_Filter'] = ib_df[['Uplift sspt','Annualized Extended Contract Line List USD Amount']].apply(lambda x: True if (x[0]-x[1]) > 0 else False, axis=1)
+    # ib_df['Annualized Extended Contract Line List USD Amount'] = ib_df['Annualized Extended Contract Line List USD Amount'].fillna(0)
+    # ib_df['Current_Contract_Type_SP_Filter'] = ib_df[['Uplift sspt','Annualized Extended Contract Line List USD Amount']].apply(lambda x: True if (x[0]-x[1]) > 0 else False, axis=1)
 
     #ib_df.drop(columns=['cs multiplier sl','CS SSPT (Multiplier)','Uplift sspt'], inplace=True)
 
-    return ib_df
+    return (ib_df['Uplift sspt'] * ib_df['Item Quantity']).sum()
