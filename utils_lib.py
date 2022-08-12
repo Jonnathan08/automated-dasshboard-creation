@@ -420,6 +420,7 @@ def get_ib_data(user, ids, id_type):
                     CON_SNTC_SSPT_OFFER_FLAG,
                     CON_CURRENT_SSPT_FLAG,
                     CON_COMMENTS,
+                    sum(L12HR),
                     sum(L12OS),
                     sum(L14HR),
                     sum(L14OS),
@@ -506,7 +507,9 @@ def get_ib_data(user, ids, id_type):
                     WHERE ACCOUNT_IDENTIFIER = '{id_type}'
                     AND 
                     CUSTOMER_ID IN ({ids})
-                    group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,31,32,33,34,35,36,64,112,113,114,115,116,117,118
+                    AND 
+                    SERVICE_BRAND_CODE NOT IN ('PARTNER BRANDED')
+                    group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,31,32,33,34,35,36,65,113,114,115,116,117,118,119
                  """
     
     cs.execute(query_ib)
@@ -552,6 +555,7 @@ def get_ib_data(user, ids, id_type):
                     'SNTC SSPT Offer Flag',
                     'Current SSPT Flag',
                     'Comments',
+                    'L12HR',
                     'L12OS',
                     'L14HR',
                     'L14OS',
@@ -635,7 +639,7 @@ def get_ib_data(user, ids, id_type):
                     'Uplift',
                     'ADJUSTED_CATEGORY']
 
-    ib_df[['L12OS',
+    ib_df[['L12HR','L12OS',
                 'L14HR',
                 'L14OS',
                 'L1DCP',
@@ -747,6 +751,7 @@ def get_ib_data(user, ids, id_type):
                         'Contract Line List Price USD': float,
                         'Contract Line Net Price USD': float,
                         'Asset List Amount': float,
+                        'L12HR':float,
                         'L12OS':float,
                         'L14HR':float,
                         'L14OS':float,
@@ -869,19 +874,19 @@ def get_coverage_data(user, ids, id_type):
     cs = cnn.cursor()
 
     query_coverage = f"""SELECT CUSTOMER_ID,
-                    CUSTOMER_NAME,
-                    COVERAGE,
-                    sum(INSTALLATION_QUANTITY),
-                    SUM(ASSET_LIST_PRICE),
-                    sum(PRODUCT_NET_PRICE),
-                    sum(ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT),
-                    sum(CONTRACT_LINE_NET_USD_AMOUNT),
-                    sum(ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT)
-                    FROM CX_DB.CX_CA_BR.BV_OE_IB_ASSET
-                    WHERE ACCOUNT_IDENTIFIER = '{id_type}'
-                    AND 
-                    CUSTOMER_ID IN ({ids})
-                    group by CUSTOMER_ID,CUSTOMER_NAME,COVERAGE
+                        CUSTOMER_NAME,
+                        COVERAGE,
+                        sum(INSTALLATION_QUANTITY),
+                        SUM(ASSET_LIST_PRICE),
+                        sum(PRODUCT_NET_PRICE),
+                        sum(ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT),
+                        sum(CONTRACT_LINE_NET_USD_AMOUNT),
+                        sum(ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT)
+                        FROM CX_DB.CX_CA_BR.BV_OE_IB_ASSET
+                        WHERE ACCOUNT_IDENTIFIER = '{id_type}'
+                        AND 
+                        CUSTOMER_ID IN ({ids})
+                        group by CUSTOMER_ID,CUSTOMER_NAME,COVERAGE
                  """
 
     cs.execute(query_coverage)
@@ -2432,8 +2437,8 @@ def set_datasource(df,type,folder_path
 
         dataframe.rename(columns={dataframe.columns[0]:'ID', dataframe.columns[1]:'Name'},inplace=True)
 
-        st = success_track_pricing_list[['Product SKU','L12HR']]
-        dataframe = dataframe.merge(st, how='left', left_on='Product ID',right_on='Product SKU', suffixes=('', ' (Success Track PIDs)'))
+        '''st = success_track_pricing_list[['Product SKU','L12HR']]
+        dataframe = dataframe.merge(st, how='left', left_on='Product ID',right_on='Product SKU', suffixes=('', ' (Success Track PIDs)'))'''
         sp = sspt_pricing_list_outputTable[['Product SKU','ELSUS','SSPTS','SSS2P','SSTCM','SSSW']]
         dataframe = dataframe.merge(sp, how='left',left_on='Product ID', right_on='Product SKU', suffixes=('', ' (Output Table)'))
            
@@ -2677,13 +2682,6 @@ def set_datasource(df,type,folder_path
 #Calculation of Solution Support recommenden SL oppty
     
 def SSPT_Oppty(IB):
-    '''
-    La funcion recibe la ruta de un archivo excel y calcula el IB value
-    entradas:
-        path: Ruta del archivo.
-    salidas:
-        
-    '''
 
     #Leyendo archivo de IB
     merge = IB
@@ -2702,11 +2700,7 @@ def SSPT_Oppty(IB):
         #Calculando columna LDos flag
         merge['LDoS Flag']=''
         merge['LDoS Flag']= LDoS_flag( merge['LDoS'])
-        #merge[['LDoS','LDoS Flag']][merge['LDoS Flag']=='N']
-
-        # merge = contract_type_sspt_filter(merge)
-        # merge = merge[merge['Current_Contract_Type_SP_Filter'] == True]
-
+        
         def select_data_to_display(LDoS_flag,cover_lin_status,eligible,coverage):
             value = ''
             if (LDoS_flag =='Y') & (cover_lin_status != 'TERMINATED') & (eligible=='Y') & (coverage=='NOT COVERED'):
@@ -2759,7 +2753,7 @@ def SSPT_Oppty(IB):
 
         merge2 = merge
 
-        SP_Oppty1 =(Uplift - (merge2['Annualized Extended Contract Line List USD Amount'].sum()))
+        SP_Oppty1 = (Uplift - (merge2['Annualized Extended Contract Line List USD Amount'].sum()))
 
         return round(SP_Oppty1,1)
 
@@ -2817,14 +2811,15 @@ def ST_Oppty(IB):
         merge1['SmartNet ST Not Covered'] = merge1[['Coverage','DNA HW Appliance','SmartNet ST Not Covered','Default Service List Price USD']].apply(lambda x: x[3] if (x[0] == 'NOT COVERED') and (x[1] == '1') else x[2], axis=1)
 
         #-----------------------------------------------Calculating ST Estimated List Price-----------------------------------------------
-        #merge1['ST Estimated List Price'] = (merge1['L2NBD'] + merge1['L2SWT'])*merge1['Item Quantity']
-        merge1['L2 SWT'] = merge1['L2SWT']*merge1['Item Quantity']
+        
+        merge1['L2 SWT'] = merge1['L2SWT'] # *merge1['Item Quantity']
         merge1['Estimated L2 Scv'] = merge1['L2NBD']+merge1['L2 SWT']
-        merge1['ST Estimated List Price'] = merge1['Estimated L2 Scv'] * merge1['Item Quantity']
+        merge1['ST Estimated List Price'] = merge1['Estimated L2 Scv'] # * merge1['Item Quantity']
         
         #------------------------------------------------------Filtering------------------------------------------------------------------
         merge1 = merge1[merge1['Coverage'] == 'COVERED']
         merge1 = merge1[merge1['Success Tracks'] == 'Elegible']
+
         #filtro product banding
         merge1=merge1[merge1["ADJUSTED_CATEGORY"].isin(['High','Mid'])]
 
@@ -2967,9 +2962,9 @@ def oppty_validation(oppty):
 
 def smartnet_total_care_NBD_list_price(ib):
 
-    ib['L2 SWT'] = ib['L2SWT']*ib['Item Quantity']
+    ib['L2 SWT'] = ib['L2SWT'] # *ib['Item Quantity']
     ib['Estimated L2 Scv'] = ib['L2NBD']+ib['L2 SWT']
-    ib['ST Estimated List Price'] = ib['Estimated L2 Scv'] * ib['Item Quantity']
+    ib['ST Estimated List Price'] = ib['Estimated L2 Scv'] # * ib['Item Quantity']
     ib['Contract type filter'] = ib['ST Estimated List Price'] - ib['Annualized Extended Contract Line List USD Amount']
     ib['Contract type filter'] = ib['Contract type filter'].apply(lambda x: 'False' if x < 0 else 'True')
     ib = ib[ib['Contract type filter']=='True']
@@ -2978,7 +2973,7 @@ def smartnet_total_care_NBD_list_price(ib):
     ib = ib[ib['ADJUSTED_CATEGORY'].isin(['High','Mid'])]
     ib = ib[ib['Coverage'] == 'COVERED']
     smartnet_value = int(ib['Annualized Extended Contract Line List USD Amount'].sum())
-    lent = len(str(smartnet_value))
+    lent = len(str(smartnet_value).split('.')[0])
     return smartnet_value, lent
 
 
@@ -2987,9 +2982,9 @@ def smartnet_total_care_NBD_list_price(ib):
 def estimated_list_price(ib):
 
     #Current Contract Type Filter
-    ib['L2 SWT'] = ib['L2SWT']*ib['Item Quantity']
+    ib['L2 SWT'] = ib['L2SWT'] # *ib['Item Quantity']
     ib['Estimated L2 Scv'] = ib['L2NBD']+ib['L2 SWT']
-    ib['ST Estimated List Price'] = ib['Estimated L2 Scv'] * ib['Item Quantity']
+    ib['ST Estimated List Price'] = ib['Estimated L2 Scv'] # * ib['Item Quantity']
     ib['Contract type filter'] = ib['ST Estimated List Price'] - ib['Annualized Extended Contract Line List USD Amount']
     ib['Contract type filter'] = ib['Contract type filter'].apply(lambda x: 'False' if x < 0 else 'True')
     ib = ib[ib['Contract type filter']=='True']
@@ -2997,8 +2992,9 @@ def estimated_list_price(ib):
     ib = ib[~(pd.isna(ib['Product ID']) | ib['Contract Type'].isin(['L1NB3','L1NB5','L1NBD','L1SWT','L24H3','L24H5','L24HR','L2NB3','L2NB5','L2NBD','L2SWT']))]
     ib = ib[ib['ADJUSTED_CATEGORY'].isin(['High','Mid'])]
     ib = ib[ib['Coverage'] == 'COVERED']
+
     estimated_value = ib['ST Estimated List Price'].sum()
-    lent = len(str(estimated_value))
+    lent = len(str(estimated_value).split('.')[0])
     return estimated_value, lent
 
 
@@ -3025,6 +3021,7 @@ def smartsheet_len_info(df):
     else:
         return 'Correct'
     
+# Function for the calculus of the sspt uplift opportunity
 
 def Uplift_Recommended_SL(df):
 
@@ -3091,9 +3088,5 @@ def Uplift_Recommended_SL(df):
     ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'LSNT' else x[2], axis=1)
 
     ib_df['Uplift sspt'] = ib_df['Uplift sspt'].fillna(0)
-    # ib_df['Annualized Extended Contract Line List USD Amount'] = ib_df['Annualized Extended Contract Line List USD Amount'].fillna(0)
-    # ib_df['Current_Contract_Type_SP_Filter'] = ib_df[['Uplift sspt','Annualized Extended Contract Line List USD Amount']].apply(lambda x: True if (x[0]-x[1]) > 0 else False, axis=1)
-
-    #ib_df.drop(columns=['cs multiplier sl','CS SSPT (Multiplier)','Uplift sspt'], inplace=True)
-
-    return (ib_df['Uplift sspt'] * ib_df['Item Quantity']).sum()
+    #(ib_df['Uplift sspt'] * ib_df['Item Quantity']).sum()
+    return ib_df['Uplift sspt'].sum()
