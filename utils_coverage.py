@@ -545,6 +545,7 @@ def upload_data_to_sf(df,user):
     conn=cnn,
     df=df,
     table_name='COVERAGE_COMPASS_SN_LOG'
+    #table_name='EMEA_COV_COMPASS_SN_LOG'
     )
     
 warranty_types_to_exclude = ["ERAT-3YR-LTD-HW","WARR-LIFE-NBD-HW",
