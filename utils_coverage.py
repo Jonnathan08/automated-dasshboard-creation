@@ -9,7 +9,7 @@ from datetime import datetime
 from snowflake.connector.pandas_tools import write_pandas
 
 from pathlib import Path
-#from sqlalchemy import true
+from sqlalchemy import true
 
 from tableauhyperapi import HyperProcess, Telemetry, \
     Connection, CreateMode, \
@@ -111,6 +111,67 @@ def get_uncovered_data(user,ids_sav,ids_gu,ids_cr,ids_cav):
                                  "CONTRACT_TYPE","SUB_BUSINESS_ENTITY_DESCR","BUSINESS_ENTITY_DESCR","LAST_SUPPORT_DT",
                                  "LDOS_AGE","LDOS_FISCAL_YEAR","WARRANTY_TYPE","INSTALLATION_QUANTITY",
                                  "LATEST_QUALIFICATION_STATUS","BILLTO_CUSTOMER_NAME","PF_BAND","BASE_PRICE_USD_AMT",
+                                 "PRODUCT_UNIT_LIST_PRICE","SNT","C2P","C4P","C4S","CS","SNC","SNTE","SNTP","ECMU","S2P",
+                                 "ECMUS","SSC2P","SSC4P","SSC4S","SSCS","SSNCO","SSSNC","SSSNE","SSSNP","SSSNT","5SNTP",
+                                 "REFRESH_DATE","SOURCE","EQUIPMENT_TYPE_DESCRIPTION","APPLIANCE_ID","INVENTORY",
+                                 "COLLECTION_DATE","HOSTNAME","IPADDRESS","IMPORTED_BY","ALERT_URL","SERVICE_PROGRAM",
+                                 "CONTRACT_END_DATE","EQUIPMENT_TYPE","UPDATED_DATE","ACCOUNT_ID",
+                                 "CONTRACT_LINE_STATUS_FROM_IB","LINE_STATUS","SSPT_YORN","SNTC_YORN" ]
+
+            df = pd.DataFrame(df,columns=uncovered_columns)
+            dfs.append(df)
+
+    uncovered_df = pd.concat(dfs)
+    
+    #types = uncovered_df.dtypes.to_dict()
+    
+    return uncovered_df
+
+def get_uncovered_data2(user,ids_sav,ids_gu,ids_cr,ids_cav):
+    
+    """Get uncovered data from IDs
+    
+    param: user - cisco e-mail address
+    param: ids - list of given account ids"""
+     
+    cnn = snowflake.connector.connect(
+    user=user,
+    authenticator='externalbrowser',
+    role='CX_CA_BUS_ANALYST_ROLE',
+    warehouse='CX_CA_RPT_WH',
+    database='CX_DB',
+    schema='CX_CA_BR',
+    account='cisco.us-east-1'
+    )
+    
+    cs = cnn.cursor()
+    
+    dfs = []
+    types_list = {'SAV':ids_sav,'GU':ids_gu,'CR':ids_cr,'CAV':ids_cav}
+    
+    for type_id in types_list.keys():
+
+        if types_list.get(type_id) == '': pass
+        else:
+
+            query_uncovered = f"""SELECT * FROM "CX_DB"."CX_CA_BR"."BV_CX_IB_COLLECTOR_FINAL"
+                                WHERE CUSTOMER_ID IN ({types_list.get(type_id)}) AND ACCOUNT_IDENTIFIER = '{type_id}'"""
+
+            cs.execute(query_uncovered)
+            df = cs.fetchall()
+
+            uncovered_columns = ["CUSTOMER_ID","CUSTOMER_NAME","ACCOUNT_IDENTIFIER","L1_SALES_TERRITORY_DESCR",
+                                 "L2_SALES_TERRITORY_DESCR","COVERAGE","SERVICE_CONTRACT_NUMBER","CONTRACT_LINE_STATUS",
+                                 "SERIAL_NUMBER","INSTANCE_NUMBER","INSTANCE_STATUS","PRODUCT_SALES_ORDER_NUMBER",
+                                 "CONTRACT_LINE_END_DATE","CONTRACT_LINE_END_FISCAL_QUARTER","CONTRACT_LINE_END_FISCAL_YEAR",
+                                 "SHIP_DATE","SHIP_MONTH_AGE","SHIPPED_FISCAL_YEAR","BK_PRODUCT_ID","PRODUCT_CATEGORY_CD",
+                                 "DV_GOODS_PRODUCT_CATEGORY_CD","BK_PRODUCT_TYPE_ID","DV_ITEM_TYPE_CD","RU_BK_PRODUCT_FAMILY_ID",
+                                 "COMPONENT_TYPE","CONTRACT_TYPE","SUB_BUSINESS_ENTITY_DESCR",
+                                 "BUSINESS_ENTITY_DESCR","LAST_SUPPORT_DT",
+                                 "LDOS_AGE","LDOS_FISCAL_YEAR","WARRANTY_TYPE","INSTALLATION_QUANTITY",
+                                 "LATEST_QUALIFICATION_STATUS","BILLTO_CUSTOMER_NAME","PF_BAND","BK_BE_GEO_ID_INT",
+                                 "CHANNEL_PARTNER_NAME","INSTALL_SITE_ID","COUNTRY_NAME",
+                                 "BASE_PRICE_USD_AMT",
                                  "PRODUCT_UNIT_LIST_PRICE","SNT","C2P","C4P","C4S","CS","SNC","SNTE","SNTP","ECMU","S2P",
                                  "ECMUS","SSC2P","SSC4P","SSC4S","SSCS","SSNCO","SSSNC","SSSNE","SSSNP","SSSNT","5SNTP",
                                  "REFRESH_DATE","SOURCE","EQUIPMENT_TYPE_DESCRIPTION","APPLIANCE_ID","INVENTORY",
@@ -348,7 +409,53 @@ def get_tac_data(user,ids_sav,ids_gu,ids_cr,ids_cav):
 
     return tac_df
 
-def format_columns(uncovered,coverage,contracts):
+
+
+def get_appliance_data(user,ids_sav,ids_gu,ids_cr,ids_cav):
+    
+    """Get appliance details data from IDs
+    
+    param: user - cisco e-mail address
+    param: ids - list of given account ids"""
+     
+    cnn = snowflake.connector.connect(
+    user=user,
+    authenticator='externalbrowser',
+    role='CX_CA_BUS_ANALYST_ROLE',
+    warehouse='CX_CA_RPT_WH',
+    database='CX_DB',
+    schema='CX_CA_BR',
+    account='cisco.us-east-1'
+    )
+    
+    cs = cnn.cursor()
+    
+    dfs = []
+    types_list = {'SAV':ids_sav,'GU':ids_gu,'CR':ids_cr,'CAV':ids_cav}
+    
+    for type_id in types_list.keys():
+
+        if types_list.get(type_id) == '': pass
+        else:
+
+            query_appliance = f"""SELECT * FROM "CX_DB"."CX_CA_BR"."BV_CX_COLLECTOR_APPLIANCE_DETAILS"
+                                WHERE CUSTOMER_ID IN ({types_list.get(type_id)}) AND CUSTOMER_IDENTIFIER = '{type_id}'"""
+
+            cs.execute(query_appliance)
+            df = cs.fetchall()
+
+            appliance_columns = ["CR_PARTY_ID","APPLIANCE_ID","INVENTORY_NAME","COLLECTION_DATE","CUSTOMER_IDENTIFIER","CUSTOMER_ID"]
+
+            df = pd.DataFrame(df,columns=appliance_columns)
+            dfs.append(df)
+
+    appliance_df = pd.concat(dfs)
+    
+    #types = uncovered_df.dtypes.to_dict()
+    
+    return appliance_df
+
+def format_columns(uncovered,coverage,contracts,appliance):
     
     # CONTRACTS & COVERAGE
     coverage[['COVERED_ITEM_QTY','UNCOVERED_ITEM_QTY','UNCOVERED_SNTC_LIST_PRICE','UNCOVERED_SSPT_LIST_PRICE','PRODUCT_UNIT_LIST_PRICE']] = coverage[['COVERED_ITEM_QTY','UNCOVERED_ITEM_QTY','UNCOVERED_SNTC_LIST_PRICE','UNCOVERED_SSPT_LIST_PRICE','PRODUCT_UNIT_LIST_PRICE']].astype(float)
@@ -358,15 +465,17 @@ def format_columns(uncovered,coverage,contracts):
     #coverage.rename(columns=new_columns_coverage,inplace=True)
     
     # UNCOVERED DATA
-    new_columns_uncovered = {'PRODUCT_SALES_ORDER_NUMBER':'Product SO#',
-                             'BK_PRODUCT_ID':'Product ID',
-                             'PRODUCT_CATEGORY_CD':'Product Category',
-                             'SUB_BUSINESS_ENTITY_DESCR':'Sub Architecture', 
-                             'BUSINESS_ENTITY_DESCR':'Architecture', 
-                             'BK_PRODUCT_TYPE_ID':'Product Type', 
-                             'RU_BK_PRODUCT_FAMILY_ID':'Product Family',
-                             'BILLTO_CUSTOMER_NAME':'Product Bill To',
-                             'PF_BAND':'Product Band'}
+    uncovered = uncovered[["ACCOUNT_ID","ACCOUNT_IDENTIFIER","ALERT_URL","APPLIANCE_ID","BILLTO_CUSTOMER_NAME","BK_PRODUCT_ID","BK_PRODUCT_TYPE_ID","BUSINESS_ENTITY_DESCR","CHANNEL_PARTNER_NAME","COLLECTION_DATE","COMPONENT_TYPE","CONTRACT_END_DATE","CONTRACT_LINE_END_DATE","CONTRACT_LINE_STATUS","CONTRACT_LINE_STATUS_FROM_IB","CONTRACT_TYPE","COUNTRY_NAME","COVERAGE","CUSTOMER_NAME","DV_GOODS_PRODUCT_CATEGORY_CD","DV_ITEM_TYPE_CD","EQUIPMENT_TYPE_DESCRIPTION","HOSTNAME","IMPORTED_BY","INSTANCE_STATUS","INVENTORY","IPADDRESS","L1_SALES_TERRITORY_DESCR","L2_SALES_TERRITORY_DESCR","LAST_SUPPORT_DT","LATEST_QUALIFICATION_STATUS","LINE_STATUS","PF_BAND","PRODUCT_CATEGORY_CD","PRODUCT_SALES_ORDER_NUMBER","REFRESH_DATE","RU_BK_PRODUCT_FAMILY_ID","SERIAL_NUMBER","SERVICE_CONTRACT_NUMBER","SERVICE_PROGRAM","SHIP_DATE","SNTC_YORN","SOURCE","SSPT_YORN","SUB_BUSINESS_ENTITY_DESCR","UPDATED_DATE","WARRANTY_TYPE","5SNTP","BASE_PRICE_USD_AMT","BK_BE_GEO_ID_INT","C2P","C4P","C4S","CONTRACT_LINE_END_FISCAL_QUARTER","CONTRACT_LINE_END_FISCAL_YEAR","CS","CUSTOMER_ID","ECMU","ECMUS","EQUIPMENT_TYPE","INSTALL_SITE_ID","INSTALLATION_QUANTITY","INSTANCE_NUMBER","LDOS_AGE","LDOS_FISCAL_YEAR","PRODUCT_UNIT_LIST_PRICE","S2P","SHIP_MONTH_AGE","SHIPPED_FISCAL_YEAR","SNC","SNT","SNTE","SNTP","SSC2P","SSC4P","SSC4S","SSCS","SSNCO","SSSNC","SSSNE","SSSNP","SSSNT"]]
+    
+    #new_columns_uncovered = {'PRODUCT_SALES_ORDER_NUMBER':'Product SO#',
+    #                         'BK_PRODUCT_ID':'Product ID',
+    #                         'PRODUCT_CATEGORY_CD':'Product Category',
+    #                         'SUB_BUSINESS_ENTITY_DESCR':'Sub Architecture', 
+    #                         'BUSINESS_ENTITY_DESCR':'Architecture', 
+    #                         'BK_PRODUCT_TYPE_ID':'Product Type', 
+    #                         'RU_BK_PRODUCT_FAMILY_ID':'Product Family',
+    #                         'BILLTO_CUSTOMER_NAME':'Product Bill To',
+    #                         'PF_BAND':'Product Band'}
     
     uncovered[['SERVICE_CONTRACT_NUMBER','LDOS_AGE','LDOS_FISCAL_YEAR']] = uncovered[['SERVICE_CONTRACT_NUMBER','LDOS_AGE','LDOS_FISCAL_YEAR']].fillna(0).astype("int64")
     uncovered['INSTALLATION_QUANTITY'] = uncovered['INSTALLATION_QUANTITY'].astype(float)
@@ -378,6 +487,7 @@ def format_columns(uncovered,coverage,contracts):
     uncovered[['BASE_PRICE_USD_AMT','SNT', 'C2P', 'C4P', 'C4S', 'CS', 'SNC','SNTE', 'SNTP', 'ECMU', 'S2P', 'ECMUS', 'SSC2P', 'SSC4P', 'SSC4S', 'SSCS', 'SSNCO', 'SSSNC', 'SSSNE', 'SSSNP', 'SSSNT', '5SNTP']] = uncovered[['BASE_PRICE_USD_AMT','SNT', 'C2P', 'C4P', 'C4S', 'CS', 'SNC','SNTE', 'SNTP', 'ECMU', 'S2P', 'ECMUS', 'SSC2P', 'SSC4P', 'SSC4S','SSCS', 'SSNCO', 'SSSNC', 'SSSNE', 'SSSNP', 'SSSNT', '5SNTP']].astype(float)
     uncovered["SHIP_DATE"] = pd.to_datetime(uncovered["SHIP_DATE"])
     uncovered["LAST_SUPPORT_DT"] = pd.to_datetime(uncovered["LAST_SUPPORT_DT"], errors = 'coerce')
+
     
     #uncovered.rename(columns=new_columns_uncovered,inplace = True)
     
@@ -399,7 +509,12 @@ def format_columns(uncovered,coverage,contracts):
     
     contracts.rename(columns=new_columns_contracts,inplace=True)
     contracts['Contract Line End Fiscal Quarter'] = contracts['Contract Line End Fiscal Quarter'].fillna(0).astype('int32')
-    return uncovered,coverage,contracts
+    
+    # APPLIANCE DETAILS
+    appliance = appliance[["APPLIANCE_ID","COLLECTION_DATE","CR_PARTY_ID","CUSTOMER_IDENTIFIER","INVENTORY_NAME","CUSTOMER_ID"]]
+    appliance["COLLECTION_DATE"] = pd.to_datetime(appliance["COLLECTION_DATE"])
+    
+    return uncovered,coverage,contracts,appliance
     
     
 def convert_to_twbx(twb_name):
@@ -430,7 +545,12 @@ def upload_data_to_sf(df,user):
     conn=cnn,
     df=df,
     table_name='COVERAGE_COMPASS_SN_LOG'
+    #table_name='EMEA_COV_COMPASS_SN_LOG'
     )
+    
+warranty_types_to_exclude = ["ERAT-3YR-LTD-HW","WARR-LIFE-NBD-HW",
+                     "WARR-ELTD-LIFE-HW","ERAT-LTD-LIFE-HW",
+                     "WARR-LIFE-RTF-HW","WARR-LTD-LIFE-HW","WARR-ELTD-LIFE-EDU"]
 
 def Total_Recommended_Estimate_CR(uncovered_data_filtered):
     
@@ -438,6 +558,7 @@ def Total_Recommended_Estimate_CR(uncovered_data_filtered):
         Recommended_Estimate=0
     else:
         uncovered_data_filtered_Y = uncovered_data_filtered[(uncovered_data_filtered["SSPT_YORN"]=="Y")&(uncovered_data_filtered["SNTC_YORN"]=="Y")]
+        uncovered_data_filtered_Y = uncovered_data_filtered_Y[~uncovered_data_filtered_Y['WARRANTY_TYPE'].isin(warranty_types_to_exclude)]
         uncovered_data_filtered_Y = uncovered_data_filtered_Y[['ECMU','INSTALLATION_QUANTITY','SNT','DV_GOODS_PRODUCT_CATEGORY_CD']].fillna(0)
         uncovered_data_filtered_Y['PRICING_LIST'] = ((uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'HARDWARE')*uncovered_data_filtered_Y['SNT'] + (uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 0)*uncovered_data_filtered_Y['SNT'] + (uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'SOFTWARE')*uncovered_data_filtered_Y['ECMU'])*uncovered_data_filtered_Y['INSTALLATION_QUANTITY']
         #uncovered_data_filtered_Y['PRICING_LIST'] = ((uncovered_data_filtered_Y['ECMU'] * uncovered_data_filtered_Y['INSTALLATION_QUANTITY'])) + uncovered_data_filtered_Y['SNT']
@@ -452,6 +573,7 @@ def Total_Recommended_Estimate_CR_SSPT(uncovered_data_filtered):
         Recommended_Estimate_SSPT=0
     else:
         uncovered_data_filtered_Y = uncovered_data_filtered[(uncovered_data_filtered["SSPT_YORN"]=="Y")&(uncovered_data_filtered["SNTC_YORN"]=="Y")]
+        uncovered_data_filtered_Y = uncovered_data_filtered_Y[~uncovered_data_filtered_Y['WARRANTY_TYPE'].isin(warranty_types_to_exclude)]
         uncovered_data_filtered_Y = uncovered_data_filtered_Y[['Ecmus','INSTALLATION_QUANTITY','Sssnt','DV_GOODS_PRODUCT_CATEGORY_CD']].fillna(0)
         uncovered_data_filtered_Y['PRICING_LIST'] = ((uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'HARDWARE')*uncovered_data_filtered_Y['Sssnt'] + (uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 0)*uncovered_data_filtered_Y['Sssnt'] + (uncovered_data_filtered_Y['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'SOFTWARE')*uncovered_data_filtered_Y['Ecmus'])*uncovered_data_filtered_Y['INSTALLATION_QUANTITY']
         #uncovered_data_filtered_Y['PRICING_LIST'] = ((uncovered_data_filtered_Y['ECMU'] * uncovered_data_filtered_Y['INSTALLATION_QUANTITY'])) + uncovered_data_filtered_Y['SNT']
@@ -469,7 +591,8 @@ def Total_Initial_Estimate(uncovered_data_filtered):
         uncovered_data_filtered_IE = uncovered_data_filtered[(uncovered_data_filtered["LINE_STATUS"]=="MISS ATTACH 1mo - 3mo")|(uncovered_data_filtered["LINE_STATUS"]=="MISS ATTACH 3mo - 12mo")|(uncovered_data_filtered["LINE_STATUS"]=="EXPIRED 12mo - 24mo")]
         uncovered_data_filtered_IE = uncovered_data_filtered_IE[(uncovered_data_filtered_IE["DV_GOODS_PRODUCT_CATEGORY_CD"]=="HARDWARE")|(uncovered_data_filtered_IE["DV_GOODS_PRODUCT_CATEGORY_CD"].isna()==True)]
         uncovered_data_filtered_IE = uncovered_data_filtered_IE[(uncovered_data_filtered_IE["PF_BAND"].isna()==False)&(uncovered_data_filtered_IE["PF_BAND"]!="N/A")]
-        uncovered_data_filtered_IE = uncovered_data_filtered_IE[uncovered_data_filtered_IE["WARRANTY_TYPE"]!="Enhanced Limited Life Hardware Warranty"]
+        #uncovered_data_filtered_IE = uncovered_data_filtered_IE[uncovered_data_filtered_IE["WARRANTY_TYPE"]!="Enhanced Limited Life Hardware Warranty"]       
+        uncovered_data_filtered_IE = uncovered_data_filtered_IE[~uncovered_data_filtered_IE['WARRANTY_TYPE'].isin(warranty_types_to_exclude)]
         uncovered_data_filtered_IE = uncovered_data_filtered_IE[['ECMU','INSTALLATION_QUANTITY','SNT','DV_GOODS_PRODUCT_CATEGORY_CD']].fillna(0)
         uncovered_data_filtered_IE['PRICING_LIST'] = ((uncovered_data_filtered_IE['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'HARDWARE')*uncovered_data_filtered_IE['SNT'] + (uncovered_data_filtered_IE['DV_GOODS_PRODUCT_CATEGORY_CD'] == 0)*uncovered_data_filtered_IE['SNT'] + (uncovered_data_filtered_IE['DV_GOODS_PRODUCT_CATEGORY_CD'] == 'SOFTWARE')*uncovered_data_filtered_IE['ECMU'])*uncovered_data_filtered_IE['INSTALLATION_QUANTITY']
         Initial_Estimate=int(round(uncovered_data_filtered_IE["PRICING_LIST"].sum(),0))

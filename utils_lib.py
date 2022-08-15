@@ -2,6 +2,7 @@ from ast import NotIn
 from csv import excel
 from heapq import merge
 from pickle import FALSE, TRUE
+from tkinter.tix import COLUMN
 import warnings
 from matplotlib.pyplot import axis
 
@@ -2441,7 +2442,7 @@ def set_datasource(df,type,folder_path
         dataframe = dataframe.merge(st, how='left', left_on='Product ID',right_on='Product SKU', suffixes=('', ' (Success Track PIDs)'))'''
         sp = sspt_pricing_list_outputTable[['Product SKU','ELSUS','SSPTS','SSS2P','SSTCM','SSSW']]
         dataframe = dataframe.merge(sp, how='left',left_on='Product ID', right_on='Product SKU', suffixes=('', ' (Output Table)'))
-           
+
         dataframe.to_csv(folder_path, index=False)
 
     ## --------------------------------------------- Coverage
@@ -2684,7 +2685,7 @@ def set_datasource(df,type,folder_path
 def SSPT_Oppty(IB):
 
     #Leyendo archivo de IB
-    merge = IB
+    merge = IB.copy()
 
     if len(merge) == 0:
         return 'N/A'
@@ -2749,11 +2750,13 @@ def SSPT_Oppty(IB):
 
         merge = merge.reset_index()
 
-        Uplift = Uplift_Recommended_SL(merge)
+        # SSPT contract filter
+        merge = Uplift_Recommended_SL(merge)
+        merge = merge[(merge['Uplift sspt'] - merge['Annualized Extended Contract Line List USD Amount'])>0]
 
         merge2 = merge
 
-        SP_Oppty1 = (Uplift - (merge2['Annualized Extended Contract Line List USD Amount'].sum()))
+        SP_Oppty1 = (merge['Uplift sspt'] - merge2['Annualized Extended Contract Line List USD Amount']).sum()
 
         return round(SP_Oppty1,1)
 
@@ -2782,7 +2785,7 @@ def ST_Oppty(IB):
         return 'N/A'
     else:
         j=merge1.iloc[0,0]  
-        #-----------------------------------------------------------------------------------------------------------------
+        #------------------------------------------------------------------------s-----------------------------------------
         # if contract type is in list_st mark it as 'Not Elegible'
         lista_st = ['L1NB3','L1NB5','L1NBD','L1SWT','L24H3','L24H5','L24HR','L2NB3','L2NB5','L2NBD','L2SWT']
         merge1['Success Tracks'].astype(str) 
@@ -3088,5 +3091,6 @@ def Uplift_Recommended_SL(df):
     ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'LSNT' else x[2], axis=1)
 
     ib_df['Uplift sspt'] = ib_df['Uplift sspt'].fillna(0)
+    ib_df.drop(columns=['cs multiplier sl','CS SSPT (Multiplier)'], axis=1, inplace=True)
     #(ib_df['Uplift sspt'] * ib_df['Item Quantity']).sum()
-    return ib_df['Uplift sspt'].sum()
+    return ib_df
