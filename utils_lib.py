@@ -2369,6 +2369,8 @@ def SSPT_Oppty(IB):
 
         merge2 = merge
 
+        merge2 = merge2[(merge2['Uplift Recommended SL $']-merge2['Annualized Extended Contract Line List USD Amount'])>0]
+
         SP_Oppty1 = round(((merge2['Uplift Recommended SL $'].sum()) - (merge2['Annualized Extended Contract Line List USD Amount'].sum()))/1000,1)
 
         return SP_Oppty1
@@ -2438,6 +2440,7 @@ def ST_Oppty(IB):
         merge1=pd.concat([merge12,merge13])
 
         #----------------------------------------Calculating Total ST Oppty KPI------------------------------------------------------------
+        merge1 = merge1[(merge1['ST Estimated List Price']-merge1['Annualized Extended Contract Line List USD Amount'])>=0]
 
         sn_nbd_st_e = merge1['SmartNet NBD ST Eligible'].sum()
         sn_st_not_covered = merge1['SmartNet ST Not Covered'].sum()
@@ -2576,6 +2579,13 @@ def oppty_validation(oppty):
 #Calculation of smartnet value for PI's eligibles for Success Tracks
 
 def smartnet_total_care_NBD_list_price(ib):
+    ib['L2 SWT'] = ib['L2SWT'] *ib['Item Quantity']
+    ib['Estimated L2 Scv'] = ib['L2NBD']+ib['L2 SWT']
+    ib['ST Estimated List Price'] = ib['Estimated L2 Scv'] * ib['Item Quantity']
+    ib['Contract type filter'] = ib['ST Estimated List Price'] - ib['Annualized Extended Contract Line List USD Amount']
+    ib['Contract type filter'] = ib['Contract type filter'].apply(lambda x: 'False' if x < 0 else 'True')
+    ib = ib[ib['Contract type filter']=='True']
+
     ib = ib[~(pd.isna(ib['Product SKU']) | ib['Contract Type'].isin(['L1NB3','L1NB5','L1NBD','L1SWT','L24H3','L24H5','L24HR','L2NB3','L2NB5','L2NBD','L2SWT']))]
     ib = ib[ib['ADJUSTED_CATEGORY'].isin(['High','Medium'])]
     ib = ib[ib['Coverage'] == 'COVERED']
@@ -2587,6 +2597,14 @@ def smartnet_total_care_NBD_list_price(ib):
 #Calculation of ST level 2 opportunity 
 
 def estimated_list_price(ib):
+    #Current Contract Type Filter
+    ib['L2 SWT'] = ib['L2SWT'] *ib['Item Quantity']
+    ib['Estimated L2 Scv'] = ib['L2NBD']+ib['L2 SWT']
+    ib['ST Estimated List Price'] = ib['Estimated L2 Scv'] * ib['Item Quantity']
+    ib['Contract type filter'] = ib['ST Estimated List Price'] - ib['Annualized Extended Contract Line List USD Amount']
+    ib['Contract type filter'] = ib['Contract type filter'].apply(lambda x: 'False' if x < 0 else 'True')
+    ib = ib[ib['Contract type filter']=='True']
+
     ib = ib[~(pd.isna(ib['Product SKU']) | ib['Contract Type'].isin(['L1NB3','L1NB5','L1NBD','L1SWT','L24H3','L24H5','L24HR','L2NB3','L2NB5','L2NBD','L2SWT']))]
     ib = ib[ib['ADJUSTED_CATEGORY'].isin(['High','Medium'])]
     ib = ib[ib['Coverage'] == 'COVERED']
