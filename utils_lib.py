@@ -1956,7 +1956,7 @@ def get_tac_df_new(user, ids, id_type):
                    'PARTY ID', 'PARTY NAME', 'ID', 'SERVICE_SUBGROUP_DESC',
                    'SERVICE_LEVLE_CODE', 'SERVICE_PROGRAM', 'SERVICE_BRAND',
                    'SR_TECHNOLOGY', 'SR_SUB_TECHNOLOGY', 'BE_INT', 'SUB_BE_INT', 'FLAG',
-                   'Data Extracted Date']
+                   'Data Extracted Date','RU_BK_PRODUCT_FAMILY_ID']
 
     tac_df = pd.DataFrame(df, columns=tac_columns)
 
@@ -2225,7 +2225,8 @@ def get_schema(table, id_type=None):
         TableDefinition.Column('SR_SUB_TECHNOLOGY', SqlType.text()),
         TableDefinition.Column('BE_INT', SqlType.text()),
         TableDefinition.Column('SUB_BE_INT', SqlType.text()),
-        TableDefinition.Column('Data Extracted Date', SqlType.date())
+        TableDefinition.Column('Data Extracted Date', SqlType.date()),
+        TableDefinition.Column('RU_BK_PRODUCT_FAMILY_ID', SqlType.text())
     ]
 
     tac_cols2 = [
@@ -2311,7 +2312,8 @@ def get_schema(table, id_type=None):
         TableDefinition.Column('BE_INT', SqlType.text()),
         TableDefinition.Column('SUB_BE_INT', SqlType.text()),
         TableDefinition.Column('FLAG', SqlType.text()),
-        TableDefinition.Column('Data Extracted Date', SqlType.date())
+        TableDefinition.Column('Data Extracted Date', SqlType.date()),
+        TableDefinition.Column('RU_BK_PRODUCT_FAMILY_ID', SqlType.text())
     ]
 
     smartsheet_cols = [
