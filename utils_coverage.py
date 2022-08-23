@@ -352,7 +352,7 @@ def get_tac_data(user,ids_sav,ids_gu,ids_cr,ids_cav):
                    'PARTY ID', 'PARTY NAME', 'ID', 'SERVICE_SUBGROUP_DESC',
                    'SERVICE_LEVLE_CODE', 'SERVICE_PROGRAM', 'SERVICE_BRAND',
                    'SR_TECHNOLOGY', 'SR_SUB_TECHNOLOGY', 'BE_INT', 'SUB_BE_INT', 'FLAG',
-                   'Data Extracted Date']
+                   'Data Extracted Date', 'RU_BK_PRODUCT_FAMILY_ID']
 
             df = pd.DataFrame(df,columns=tac_columns)
             dfs.append(df)
@@ -390,7 +390,7 @@ def get_tac_data(user,ids_sav,ids_gu,ids_cr,ids_cav):
        'PARTY ID', 'PARTY NAME', 'ID', 'SERVICE_SUBGROUP_DESC',
        'SERVICE_LEVLE_CODE', 'SERVICE_PROGRAM', 'SERVICE_BRAND',
        'SR_TECHNOLOGY', 'SR_SUB_TECHNOLOGY', 'BE_INT', 'SUB_BE_INT', 'FLAG',
-       'Data Extracted Date']
+       'Data Extracted Date', 'RU_BK_PRODUCT_FAMILY_ID']
    
     types = tac_df.dtypes.to_dict()
     
@@ -723,6 +723,7 @@ def get_schema(table):
         TableDefinition.Column('BE_INT', SqlType.text()),
         TableDefinition.Column('SUB_BE_INT', SqlType.text()),
         TableDefinition.Column('FLAG', SqlType.text()),
-        TableDefinition.Column('Data Extracted Date', SqlType.date())
+        TableDefinition.Column('Data Extracted Date', SqlType.date()),
+        TableDefinition.Column('RU_BK_PRODUCT_FAMILY_ID', SqlType.text())
             ]
     return tac_cols
