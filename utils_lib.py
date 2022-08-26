@@ -887,6 +887,7 @@ def get_coverage_data(user, ids, id_type):
                         WHERE ACCOUNT_IDENTIFIER = '{id_type}'
                         AND 
                         CUSTOMER_ID IN ({ids})
+                        AND PRODUCT_CATEGORY_CD = 'Hardware'
                         group by CUSTOMER_ID,CUSTOMER_NAME,COVERAGE
                  """
 
