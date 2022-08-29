@@ -2755,7 +2755,9 @@ def SSPT_Oppty(IB):
 
         # SSPT contract filter
         merge = Uplift_Recommended_SL(merge)
-        merge = merge[(merge['Uplift sspt'] - merge['Annualized Extended Contract Line List USD Amount'])>0]
+
+        
+        merge = merge[(merge['Uplift sspt'] - merge['Annualized Extended Contract Line List USD Amount'])>=0]
 
         merge2 = merge
 
@@ -3037,68 +3039,72 @@ def smartsheet_len_info(df):
 def Uplift_Recommended_SL(df):
 
     ib_df = df.copy()
-    ib_df['Uplift sspt'] = pd.NaT
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSC2P','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'C2P' else x[3], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSC4P','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] in ['3C4P','C4P','C4S'] else x[3], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSCS','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'CS' else x[3], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSDR5','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'UCSD5' else x[3], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSDR7','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'UCSD7' else x[3], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSS2P','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'S2P' else x[3], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNE','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'SNTE' else x[3], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNP','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] in ['3SNTP','5SNTP'] else x[2], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNP','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] in ['SNTP'] else x[3], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] in ['3SNT','5SNT','SNT'] else x[2], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','SSSW','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] in ['SW'] else x[3], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','ECMUS','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] in ['ECMU'] else x[2], axis=1)
+    if len(ib_df)>0:
+        ib_df['Uplift sspt'] = pd.NaT
+        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSC2P','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'C2P' else x[3], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSC4P','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] in ['3C4P','C4P','C4S'] else x[3], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSCS','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'CS' else x[3], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSDR5','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'UCSD5' else x[3], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSDR7','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'UCSD7' else x[3], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSS2P','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'S2P' else x[3], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNE','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'SNTE' else x[3], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNP','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] in ['3SNTP','5SNTP'] else x[2], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNP','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] in ['SNTP'] else x[3], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] in ['3SNT','5SNT','SNT'] else x[2], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','SSSW','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] in ['SW'] else x[3], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['Contract Type','ECMUS','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] in ['ECMU'] else x[2], axis=1)
 
-    def cs_multiplier_sl(service_level, Sss2P, Ssc2P, Sssnp, Ssc4P, Sssne, Ssc4S, Sssnt, Sscs, Ssdr7, Ssdr5, Sssw):
-        if service_level == '24x7x2':
-            return Sss2P
-        elif service_level == '24x7x2OS': 
-            return Ssc2P
-        elif service_level == '24x7x4': 
-            return Sssnp
-        elif service_level == '24x7x4OS': 
-            return Ssc4P
-        elif service_level == '8x5x4': 
-            return Sssne
-        elif service_level == '8x5x4OS': 
-            return Ssc4S
-        elif service_level == 'NBD': 
-            return Sssnt
-        elif service_level == '8x5xNDBOS': 
-            return Sscs
-        elif service_level == 'DR 24x7x4OS': 
-            return Ssdr7
-        elif service_level == 'DR 8x5xNDBOS': 
-            return Ssdr5
-        elif service_level == 'SNTC NO RMA': 
-            return Sssw
-        else: 
-            return 0
+        def cs_multiplier_sl(service_level, Sss2P, Ssc2P, Sssnp, Ssc4P, Sssne, Ssc4S, Sssnt, Sscs, Ssdr7, Ssdr5, Sssw):
+            if service_level == '24x7x2':
+                return Sss2P
+            elif service_level == '24x7x2OS': 
+                return Ssc2P
+            elif service_level == '24x7x4': 
+                return Sssnp
+            elif service_level == '24x7x4OS': 
+                return Ssc4P
+            elif service_level == '8x5x4': 
+                return Sssne
+            elif service_level == '8x5x4OS': 
+                return Ssc4S
+            elif service_level == 'NBD': 
+                return Sssnt
+            elif service_level == '8x5xNDBOS': 
+                return Sscs
+            elif service_level == 'DR 24x7x4OS': 
+                return Ssdr7
+            elif service_level == 'DR 8x5xNDBOS': 
+                return Ssdr5
+            elif service_level == 'SNTC NO RMA': 
+                return Sssw
+            else: 
+                return 0
 
-    ib_df['cs multiplier sl'] = ib_df[['Service Level', 'SSS2P', 'SSC2P', 'SSSNP', 'SSC4P', 'SSSNE', 'SSC4S', 'SSSNT', 'SSCS', 'SSDR7', 'SSDR5', 'SSSW']].apply(lambda x: cs_multiplier_sl(x[0],x[1],x[2],x[3],x[4],x[5],x[6],x[7],x[8],x[9],x[10],x[11]), axis=1)
-    ib_df['CS SSPT (Multiplier)'] = ib_df[['Uplift','cs multiplier sl','Multiplier']].apply(lambda x: x[1]*x[2] if pd.notna(x[0]) else 0, axis=1)
+        ib_df['cs multiplier sl'] = ib_df[['Service Level', 'SSS2P', 'SSC2P', 'SSSNP', 'SSC4P', 'SSSNE', 'SSC4S', 'SSSNT', 'SSCS', 'SSDR7', 'SSDR5', 'SSSW']].apply(lambda x: cs_multiplier_sl(x[0],x[1],x[2],x[3],x[4],x[5],x[6],x[7],x[8],x[9],x[10],x[11]), axis=1)
+        ib_df['CS SSPT (Multiplier)'] = ib_df[['Uplift','cs multiplier sl','Multiplier']].apply(lambda x: x[1]*x[2] if pd.notna(x[0]) else 0, axis=1)
 
-    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','CS SSPT (Multiplier)','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] in ['Combined Services'] else x[2], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['SP Base'] and x[1] in ['SPAR1'] else x[3], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNE','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPAR2'] else x[4], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNP','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPAR3'] else x[4], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSS2P','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPAR4'] else x[4], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSC2P','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPC2P'] else x[4], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSC4P','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['SP Base'] and x[1] in ['SPC4P'] else x[3], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['SP Base'] and x[1] in ['SBAR1'] else x[3], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSCS','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPCS'] else x[4], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['TELEPRESENCE CUSTOMERS'] and x[1] in ['ECDN'] else x[3], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSCS','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['TELEPRESENCE CUSTOMERS'] and x[1] in ['ECDO'] else x[3], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNC','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'SNC' else x[2], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSNCO','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'SNCO' else x[3], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNP','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'PSUP' else x[3], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'PSRT' else x[2], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'PSUT' else x[2], axis=1)
-    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'LSNT' else x[2], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','CS SSPT (Multiplier)','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] in ['Combined Services'] else x[2], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['SP Base'] and x[1] in ['SPAR1'] else x[3], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNE','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPAR2'] else x[4], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNP','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPAR3'] else x[4], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSS2P','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPAR4'] else x[4], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSC2P','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPC2P'] else x[4], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSC4P','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['SP Base'] and x[1] in ['SPC4P'] else x[3], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['SP Base'] and x[1] in ['SBAR1'] else x[3], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSCS','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPCS'] else x[4], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['TELEPRESENCE CUSTOMERS'] and x[1] in ['ECDN'] else x[3], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSCS','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['TELEPRESENCE CUSTOMERS'] and x[1] in ['ECDO'] else x[3], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNC','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'SNC' else x[2], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSNCO','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'SNCO' else x[3], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNP','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'PSUP' else x[3], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'PSRT' else x[2], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'PSUT' else x[2], axis=1)
+        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'LSNT' else x[2], axis=1)
 
-    ib_df['Uplift sspt'] = ib_df['Uplift sspt'].fillna(0)
-    ib_df.drop(columns=['cs multiplier sl','CS SSPT (Multiplier)'], axis=1, inplace=True)
-    #(ib_df['Uplift sspt'] * ib_df['Item Quantity']).sum()
-    return ib_df
+        ib_df['Uplift sspt'] = ib_df['Uplift sspt'].fillna(0)
+        ib_df.drop(columns=['cs multiplier sl','CS SSPT (Multiplier)'], axis=1, inplace=True)
+        #(ib_df['Uplift sspt'] * ib_df['Item Quantity']).sum()
+        return ib_df
+    else: 
+        ib_df['Uplift sspt'] = 0
+        return ib_df
