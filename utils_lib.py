@@ -3013,9 +3013,9 @@ def estimated_list_price(ib):
 
 #Validation of lenght for calculated values
 
-def lenght_validation(number, lenght=8):
+def length_validation(number, length=8):
     try:
-        if number >= lenght:
+        if number >= length:
             return('Big value')
         else:
             return('Correct')
