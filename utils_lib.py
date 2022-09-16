@@ -887,7 +887,7 @@ def get_coverage_data(user, ids, id_type):
                         sum(ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT),
                         sum(CONTRACT_LINE_NET_USD_AMOUNT),
                         sum(ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT)
-                        FROM CX_DB.CX_CA_BR.BV_OE_IB_ASSET
+                        FROM CX_DB.CX_CA_BR.BV_OE_IB_ASSET_TEMP
                         WHERE ACCOUNT_IDENTIFIER = '{id_type}'
                         AND 
                         CUSTOMER_ID IN ({ids})
