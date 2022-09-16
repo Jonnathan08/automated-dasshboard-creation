@@ -27,7 +27,7 @@ class help_functions:
             help_functions.error_image = True
 
     def my_print(self,function_name,origin_library,embeded_function_name,embeded_function_name_origin_libary,
-    description,parameters,output,additional_libraries,additional_resources,links):
+                description,parameters,output,additional_libraries,additional_resources,links):
         self.function_name = function_name
         self.origin_library = origin_library
         self.embeded_function_name = embeded_function_name
@@ -45,6 +45,16 @@ class help_functions:
         bcolors.OKBLUE + bcolors.BOLD + "OUTPUT: " + bcolors.ENDC + self.output +"\n" + bcolors.OKBLUE + bcolors.BOLD + "ADDITIONAL LIBRARIES: " + bcolors.ENDC + self.additional_libraries +"\n" +
         bcolors.OKBLUE + bcolors.BOLD + "ADDITIONAL RESOURCES: " + bcolors.ENDC + self.additional_resources + "\n" + bcolors.OKBLUE + bcolors.BOLD + "LINKS: " + bcolors.ENDC + self.links + "\n" + "\n" +
         bcolors.OKBLUE + bcolors.BOLD + f"LINE ON THE CODE WHERE {self.function_name} APPEARS FOR THE FIRST TIME:"+ bcolors.ENDC)
+        if help_functions.error_image == True: print(bcolors.FAIL + "ERROR LOADING THE PICTURE. Make sure you have the 'help_images' folder updated." + bcolors.ENDC)
+
+    def my_print_errors(self,error_name,solution,founded_in):
+                
+        self.error_name = error_name
+        self.solution = solution
+        self.founded_in = founded_in
+
+        print(bcolors.OKBLUE + bcolors.BOLD + "ERROR NAME: " + bcolors.ENDC + self.error_name +"\n" + bcolors.OKBLUE + bcolors.BOLD + "SOLUTION: " + bcolors.ENDC + self.solution + "\n" +
+        bcolors.OKBLUE + bcolors.BOLD + "FOUNDED IN:" + bcolors.ENDC + self.founded_in)
         if help_functions.error_image == True: print(bcolors.FAIL + "ERROR LOADING THE PICTURE. Make sure you have the 'help_images' folder updated." + bcolors.ENDC)
     
 
@@ -506,10 +516,36 @@ class oe(cr,help_functions):
         self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
         return self.picture
 
-    def get_cav_names(self): # Maria Paula
-        pass
+    def get_cav_names(self):
+        
+        self.function_name = self.get_cav_names.__name__
+        self.origin_library = "utils_lib.py"
+        self.embeded_function_name = "NA"
+        self.embeded_function_name_origin_libary = "NA"
+        self.description = """
+        This function search and retrieve the CAV Name and CAV ID data from the snowflake database using the IDs (CAVs), of all accounts in process. 
+        """
+        self.parameters = """
+        1. user: username or email used to connect with the snowflake database
+        2. cavs: list of all CAVs ids got from the accounts in process
+        """ 
+        self.output = """returns a dataframe with the following columns:
+        'CAV ID','CAV NAME'"""
+        self.picture = help_functions.load_image(self,f"{self.my_path}get_cav_names.png") 
+        self.additional_libraries = """
+        1. Connector from snowflake.
+        2. DataFrame from pandas.
+        """
+        self.additional_resources = "Please refer to following code to get additional information: 'help(parameter_name)'"
+        self.links = """
+        1. Using Python Connector for Snowflake: https://docs.snowflake.com/en/user-guide/python-connector-example.html
+        """
+        help_functions.my_print(self, self.function_name,self.origin_library,self.embeded_function_name,self.embeded_function_name_origin_libary,
+        self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
+        return self.picture
 
-    def get_telemetry_df2(self): # El pepe
+    def get_telemetry_df2(self):
+        
         self.function_name = self.get_telemetry_df2.__name__
         self.origin_library = "utils_lib.py"
         self.embeded_function_name = "NA"
@@ -542,7 +578,8 @@ class oe(cr,help_functions):
         self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
         return self.picture
 
-    def get_tac_df_new(self): # Dilia
+    def get_tac_df_new(self):
+
         self.function_name = self.get_tac_df_new.__name__
         self.origin_library = "utils_lib.py"
         self.embeded_function_name = "NA"
@@ -570,19 +607,324 @@ class oe(cr,help_functions):
         self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
         return self.picture
         
+    def set_datasource(self):
 
-    def SNTC_Oppty(self): # Laura
-        pass
+        self.function_name = self.set_datasource.__name__
+        self.origin_library = "utils_lib.py"
+        self.embeded_function_name = "NA"
+        self.embeded_function_name_origin_libary = "NA"
+        self.description = """
+        This function creates the datasources (csv files) merging with the mapping files and formatting all columns according to each type of datasource (IB, Coverage, Subscription, Telemetry, and TAC). These files are read by Tableau.
+        """
+        self.parameters = """
+        1. df: dataframe to be saved as csv file.
+        2. type: define the file type and transformation type to be done over the dataframe.
+        3. folder_path: directory where the csv file is going to be save.
+        4. contract_types_list: contract type mapping.
+        5. success_track_pricing_list: Success Tracks Pricing mapping.
+        6. sspt_pricing_list_eligibleSSPT: Solution Support Eligibility mapping.
+        7. sspt_pricing_list_outputTable: Solution Support Pricing mapping.
+        8. sntc_pricing_list: SNTC Pricing mapping.
+        9. htec_contract_types_htec: software mapping.
+        10. htec_contract_types_swss:
+        11. combined_services: combined services mapping.
+        12. product_banding: product banding mapping.
+        """ 
+        self.output = "A DataFrame for each datasource with corresponding formatting to all columns."
+        self.picture = help_functions.load_image(self,f"{self.my_path}set_datasource.png") 
+        self.additional_libraries = "NA"
+        self.additional_resources = "Please refer to following code to get additional information: 'help(parameter_name)'"
+        self.links = "NA"
+        help_functions.my_print(self, self.function_name,self.origin_library,self.embeded_function_name,self.embeded_function_name_origin_libary,
+        self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
+        return self.picture
 
-    def fill_nas(self): # Dayra
+    def IB_attributes(self):
+
+        self.function_name = self.IB_attributes.__name__
+        self.origin_library = "utils_lib.py"
+        self.embeded_function_name = "NA"
+        self.embeded_function_name_origin_libary = "NA"
+        self.description = """
+        This function calculates IB Value, Percentage of Coverage and Major Renewal.
+        """
+        self.parameters = """
+        1. IB: dataframe with IB data.
+        2. Coverage: dataframe with Coverage data.
+        """ 
+        self.output = "A DataFrame with IB Value, Percentage of Coverage and Major Renewal."
+        self.picture = help_functions.load_image(self,f"{self.my_path}IB_attributes.png") 
+        self.additional_libraries = "NA"
+        self.additional_resources = "Please refer to following code to get additional information: 'help(parameter_name)'"
+        self.links = "NA"
+        help_functions.my_print(self, self.function_name,self.origin_library,self.embeded_function_name,self.embeded_function_name_origin_libary,
+        self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
+        return self.picture
+
+    def ib_value_validation(self):
+
+        self.function_name = self.ib_value_validation.__name__
+        self.origin_library = "utils_lib.py"
+        self.embeded_function_name = "NA"
+        self.embeded_function_name_origin_libary = "NA"
+        self.description = """
+        This function verifies if the IB Value is less than cero.
+        """
+        self.parameters = """
+        1. data: dataframe that contains in one of its columns the IB Value.
+        """ 
+        self.output = "A message 'Correct' if IB Value greater than cero, 'Incorrect' if less than cero or 'No IB data' otherwise."
+        self.picture = help_functions.load_image(self,f"{self.my_path}IB_attributes.png") 
+        self.additional_libraries = "NA"
+        self.additional_resources = "Please refer to following code to get additional information: 'help(parameter_name)'"
+        self.links = "NA"
+        help_functions.my_print(self, self.function_name,self.origin_library,self.embeded_function_name,self.embeded_function_name_origin_libary,
+        self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
+        return self.picture
+
+    def ib_coverage_validation(self):
+
+            self.function_name = self.ib_coverage_validation.__name__
+            self.origin_library = "utils_lib.py"
+            self.embeded_function_name = "NA"
+            self.embeded_function_name_origin_libary = "NA"
+            self.description = """
+            This function verifies if the Coverage Percentage is in a range of 0 to 1.
+            """
+            self.parameters = """
+            1. data: dataframe that contains in one of its columns the Coverage Percentage.
+            """ 
+            self.output = "A message 'Correct' if Coverage Percentage in range 0 to 1, 'Incorrect' if not or 'No IB data' otherwise."
+            self.picture = help_functions.load_image(self,f"{self.my_path}ib_covered_validation.png") 
+            self.additional_libraries = "NA"
+            self.additional_resources = "Please refer to following code to get additional information: 'help(parameter_name)'"
+            self.links = "NA"
+            help_functions.my_print(self, self.function_name,self.origin_library,self.embeded_function_name,self.embeded_function_name_origin_libary,
+            self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
+            return self.picture
+
+    def rw_validation(self):
+
+        self.function_name = self.rw_validation.__name__
+        self.origin_library = "utils_lib.py"
+        self.embeded_function_name = "NA"
+        self.embeded_function_name_origin_libary = "NA"
+        self.description = """
+        This function verifies if the Major Renewal is empty or not.
+        """
+        self.parameters = """
+        1. data: dataframe that contains in one of its columns the Major Renewal.
+        """ 
+        self.output = "A message 'Empty Value' if Major Renewal is empty, 'Correct' if it is not empty or 'No IB data' otherwise."
+        self.picture = help_functions.load_image(self,f"{self.my_path}rw_validation.png") 
+        self.additional_libraries = "NA"
+        self.additional_resources = "Please refer to following code to get additional information: 'help(parameter_name)'"
+        self.links = "NA"
+        help_functions.my_print(self, self.function_name,self.origin_library,self.embeded_function_name,self.embeded_function_name_origin_libary,
+        self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
+        return self.picture
+
+    def oppty_validation(self):
+
+        self.function_name = self.oppty_validation.__name__
+        self.origin_library = "utils_lib.py"
+        self.embeded_function_name = "NA"
+        self.embeded_function_name_origin_libary = "NA"
+        self.description = """
+        This function verifies if the opportunity value on the argument is positive or negative. 
+        """
+        self.parameters = """
+        1. oppty: Calculated oppty value which usually comes from another function.
+        """ 
+        self.output = "It returns 'Correct' if the oppry value is positive or zero, otherwise it returns 'Incorrect'."
+        self.picture = help_functions.load_image(self,f"{self.my_path}oppty_validation.png") 
+        self.additional_libraries = "NA"
+        self.additional_resources = "Please refer to following code to get additional information: 'help(parameter_name)'"
+        self.links = "NA"
+        help_functions.my_print(self, self.function_name,self.origin_library,self.embeded_function_name,self.embeded_function_name_origin_libary,
+        self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
+        return self.picture
+
+    def length_validation(self):
         
+        self.function_name = self.length_validation.__name__
+        self.origin_library = "utils_lib.py"
+        self.embeded_function_name = "NA"
+        self.embeded_function_name_origin_libary = "NA"
+        self.description = """
+        This function verifies if the argument exceeds the length limit of tableau with which the value is visible. 
+        """
+        self.parameters = """
+        1. number: Value to be measured.
+        2. length: Tableau visible lengh limit. By default is equal to 8.  
+        """ 
+        self.output = "It returns 'Big value' if the value exceeds the length parameter, if it is empty it returns 'No Data' and if the value is between the range it returns 'Correct'."
+        self.picture = help_functions.load_image(self,f"{self.my_path}length_validation.png") 
+        self.additional_libraries = "NA"
+        self.additional_resources = "Please refer to following code to get additional information: 'help(parameter_name)'"
+        self.links = "NA"
+        help_functions.my_print(self, self.function_name,self.origin_library,self.embeded_function_name,self.embeded_function_name_origin_libary,
+        self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
+        return self.picture
+
+    def smartsheet_len_info(self):
+
+        self.function_name = self.smartsheet_len_info.__name__
+        self.origin_library = "utils_lib.py"
+        self.embeded_function_name = "NA"
+        self.embeded_function_name_origin_libary = "NA"
+        self.description = """
+        This function verifies if the information returned from smartsheet that corresponds on the report to the section 'Package info', exceeds the length limit of tableau with which the value is visible. 
+        """
+        self.parameters = """
+        1. df: Dataframe where is storage the data that is retrieved from the smartsheet regarding the requests.
+        """ 
+        self.output = "It returns 'QA Package Info' if the value exceeds the length limit, otherwise it returns 'Correct'."
+        self.picture = help_functions.load_image(self,f"{self.my_path}smartsheet_len_info.png") 
+        self.additional_libraries = "NA"
+        self.additional_resources = "Please refer to following code to get additional information: 'help(parameter_name)'"
+        self.links = "NA"
+        help_functions.my_print(self, self.function_name,self.origin_library,self.embeded_function_name,self.embeded_function_name_origin_libary,
+        self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
+        return self.picture        
+
+    def SSPT_Oppty(self):
+
+        self.function_name = self.SSPT_Oppty.__name__
+        self.origin_library = "utils_lib.py"
+        self.embeded_function_name = "LDoS_flag || select_data_to_display || service_level || uplift_recommended_sl"
+        self.embeded_function_name_origin_libary = "NA"
+        self.description = """
+        This function calculates .
+        """
+        self.parameters = """
+        1. data: dataframe that contains in one of its columns the Major Renewal.
+        """ 
+        self.output = "A message 'Empty Value' if Major Renewal is empty, 'Correct' if it is not empty or 'No IB data' otherwise."
+        self.picture = help_functions.load_image(self,f"{self.my_path}rw_validation.png") 
+        self.additional_libraries = "NA"
+        self.additional_resources = "Please refer to following code to get additional information: 'help(parameter_name)'"
+        self.links = "NA"
+        help_functions.my_print(self, self.function_name,self.origin_library,self.embeded_function_name,self.embeded_function_name_origin_libary,
+        self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
+        return self.picture
+
+
+    def ST_Oppty(self):
+        
+        self.function_name = self.ST_Oppty.__name__
+        self.origin_library = "utils_lib.py"
+        self.embeded_function_name = "NA"
+        self.embeded_function_name_origin_libary = "NA"
+        self.description = """
+        This function calculates the Success Tracks opportunity. 
+        """
+        self.parameters = """
+        1. IB: dataframe that contains IB data.
+        """ 
+        self.output = "SNTC opportunity value in KUSD."
+        self.picture = "NA"
+        self.additional_libraries = "NA"
+        self.additional_resources = "Please refer to following code to get additional information: 'help(parameter_name)'"
+        self.links = "NA"
+        help_functions.my_print(self, self.function_name,self.origin_library,self.embeded_function_name,self.embeded_function_name_origin_libary,
+        self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
+        return self.picture
+
+    def expert_care_verification(self):
+        
+        self.function_name = self.expert_care_verification.__name__
+        self.origin_library = "utils_lib.py"
+        self.embeded_function_name = "NA"
+        self.embeded_function_name_origin_libary = "NA"
+        self.description = """
+        This function calculates  Expert Care oppty for verification used in conjunction with the oppty_validation function.
+        """
+        self.parameters = """
+        1. expert_care: expert care mapping file .
+        """ 
+        self.output = "Expert Care opportunity value in KUSD."
+        self.picture = help_functions.load_image(self,f"{self.my_path}expert_care.png") 
+        self.additional_libraries = "NA"
+        self.additional_resources = "Please refer to following code to get additional information: 'help(parameter_name)'"
+        self.links = "NA"
+        help_functions.my_print(self, self.function_name,self.origin_library,self.embeded_function_name,self.embeded_function_name_origin_libary,
+        self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
+        return self.picture
+
+    def smartnet_verification(self):
+        self.function_name = self.smartnet_verification.__name__
+        self.origin_library = "utils_lib.py"
+        self.embeded_function_name = "NA"
+        self.embeded_function_name_origin_libary = "NA"
+        self.description = """
+        This function calculates the smartnet value for verification used in conjunction with the oppty_validation function.
+        The value verified come from a Installed Base column called 'Default Service List Price USD.'
+        """
+        self.parameters = """
+        1. ib: Installed Base dataframe.
+        """ 
+        self.output = "Returns the sum of the Installed Base column 'Default Service List Price USD."
+        self.picture = help_functions.load_image(self,f"{self.my_path}smartnet_verification.png") 
+        self.additional_libraries = "NA"
+        self.additional_resources = "Please refer to following code to get additional information: 'help(parameter_name)'"
+        self.links = "NA"
+        help_functions.my_print(self, self.function_name,self.origin_library,self.embeded_function_name,self.embeded_function_name_origin_libary,
+        self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
+        return self.picture
+
+    def smartnet_total_care_NBD_list_price(self):
+        
+        self.function_name = self.smartnet_verification.__name__
+        self.origin_library = "utils_lib.py"
+        self.embeded_function_name = "NA"
+        self.embeded_function_name_origin_libary = "NA"
+        self.description = """
+        This function calculates the estimated value for SNTC (Installed Base column 'Annualized Extended Contract Line List USD Amount'). To do so, there are some calculations done like the prices
+        of some Service Levels, filtering negative contract types values, null Product IDs, excluding a list of Contract Type, filtering by Product Banding (High and Mid), IB covered.
+        """
+        self.parameters = """
+        1. ib: Installed Base dataframe.
+        """ 
+        self.output = "Returns the estimated value for SNTC (Installed Base column 'Annualized Extended Contract Line List USD Amount')"
+        self.picture = help_functions.load_image(self,f"{self.my_path}smartnet_total_care_NBD_list_price.png") 
+        self.additional_libraries = "NA"
+        self.additional_resources = "Please refer to following code to get additional information: 'help(parameter_name)'"
+        self.links = "NA"
+        help_functions.my_print(self, self.function_name,self.origin_library,self.embeded_function_name,self.embeded_function_name_origin_libary,
+        self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
+        return self.picture
+
+    def estimated_list_price(self):
+        
+        self.function_name = self.estimated_list_price.__name__
+        self.origin_library = "utils_lib.py"
+        self.embeded_function_name = "NA"
+        self.embeded_function_name_origin_libary = "NA"
+        self.description = """
+        This function calculates the opportunity for Success Tracks Level 2 (Installed Base column 'ST Estimated List Price'). To do so, there are some calculations done like the prices
+        of some Service Levels, filtering negative contract types values, null Product IDs, excluding a list of Contract Type, filtering by Product Banding (High and Mid), IB covered.
+        """
+        self.parameters = """
+        1. ib: Installed Base dataframe.
+        """ 
+        self.output = "Returns the estimated opportunity for Sucess Tracks (Installed Base column 'ST Estimated List Price')"
+        self.picture = help_functions.load_image(self,f"{self.my_path}estimated_list_price.png") 
+        self.additional_libraries = "NA"
+        self.additional_resources = "Please refer to following code to get additional information: 'help(parameter_name)'"
+        self.links = "NA"
+        help_functions.my_print(self, self.function_name,self.origin_library,self.embeded_function_name,self.embeded_function_name_origin_libary,
+        self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
+        return self.picture
+
+    def fill_nas(self):
         
         self.function_name = self.fill_nas.__name__
         self.origin_library = "utils_lib.py"
         self.embeded_function_name = "NA"
         self.embeded_function_name_origin_libary = "NA"
         self.description = """
-        Fills the blank spaces of the columns depending on the type of data they contain, if it is an int type record and it is empty it is filled with 0, if it is a float           type it is filled with 0.0..
+        Fills the blank spaces of the columns depending on the type of data they contain, if it is an int type record and it is empty it is filled with 0, if it is a float type it is filled with 0.0..
         """ 
         self.parameters = "df: It refers to any pandas DataFrame"
         self.output = "brings the df without blank spaces in the columns"
@@ -593,10 +935,24 @@ class oe(cr,help_functions):
         help_functions.my_print(self, self.function_name,self.origin_library,self.embeded_function_name,self.embeded_function_name_origin_libary,
         self.description,self.parameters,self.output,self.additional_libraries,self.additional_resources,self.links)
         return self.picture
-        
-        
-        
-        
-        
-        
-        pass
+    
+
+class error(help_functions):
+
+    def df_not_defined(self):
+        self.error_name="in python there is an error code that is called 'NameError' that is raised when a variable is not found in the local or global scope."
+        self.error_image=help_functions.load_image(self, f"{self.my_path}df_not_defined.png")
+        self.solution="Make shrure that you ran all the code section when the variable is created."
+        self.solution_images=help_functions.load_image(self, f"{self.my_path}df_not_defined.png")
+        self.founded_in = "The version of the templete in where was detected the error"
+        help_functions.my_print_errors(self.error_name,self.solution,self.founded_in)
+        return self.error_image
+                                                       
+    def https_connection_pool(self):
+        self.error_name="HTTPSConnectionPool(host='cx-tableau-stage.cisco.com', port=443): Max retries exceeded with url: /api/3.13/serverinfo (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x000001E684E00250>: Failed to establish a new connection:             [WinError 10061] No se puede establecer una conexión ya que el equipo de destino denegó expresamente dicha conexión'))."
+        self.error_image=help_functions.load_image(self, f"{self.my_path}HTTPSConnectionPool.png")
+        self.solution="Due to a CX-Stage tableau error. It is necessary to notify as it is not a question of the code but of tableau permissions with CISCO."
+        self.solution_images= ""
+        self.founded_in="New folders 2.0.5.4"
+        help_functions.my_print_errors(self.error_name,self.solution,self.founded_in)
+        return self.error_image
