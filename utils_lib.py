@@ -503,14 +503,15 @@ def get_ib_data(user, ids, id_type):
                     CS_SNTC_OR_SSPT,
                     CS_MULTIPLIER,
                     CS_UPLIFT,
-                    PF_BAND            
+                    PF_BAND,
+                    CHANNEL_PARTNER_NAME            
                     FROM "CX_DB"."CX_CA_BR"."BV_OE_IB_ASSET_VW"
                     WHERE ACCOUNT_IDENTIFIER = '{id_type}'
                     AND 
                     CUSTOMER_ID IN ({ids})
                     AND 
                     SERVICE_BRAND_CODE NOT IN ('PARTNER BRANDED')
-                    group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,31,32,33,34,35,36,65,113,114,115,116,117,118,119
+                    group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,31,32,33,34,35,36,65,113,114,115,116,117,118,119,120
                  """
     
     cs.execute(query_ib)
@@ -638,7 +639,8 @@ def get_ib_data(user, ids, id_type):
                     'SNTC/SSPT',
                     'Multiplier',
                     'Uplift',
-                    'ADJUSTED_CATEGORY']
+                    'ADJUSTED_CATEGORY',
+                    'Service BE GEO Name',]
 
     ib_df[['L12HR','L12OS',
                 'L14HR',
@@ -827,7 +829,8 @@ def get_ib_data(user, ids, id_type):
                         'SNTP':float,
                         'SNTPL':float,
                         'SW':float,
-                        'Multiplier':float})
+                        'Multiplier':float,
+                        'Service BE GEO Name':str})
 
     
     if id_type == 'SAV':
@@ -851,6 +854,7 @@ def get_ib_data(user, ids, id_type):
                             inplace=True)
 
     return ib_df
+
 
 def get_coverage_data(user, ids, id_type):
 
@@ -883,7 +887,7 @@ def get_coverage_data(user, ids, id_type):
                         sum(ANNUAL_CONTRACT_LINE_NET_USD_AMOUNT),
                         sum(CONTRACT_LINE_NET_USD_AMOUNT),
                         sum(ANNUALIZED_EXTENDED_CONTRACT_LINE_LIST_USD_AMOUNT)
-                        FROM CX_DB.CX_CA_BR.BV_OE_IB_ASSET
+                        FROM CX_DB.CX_CA_BR.BV_OE_IB_ASSET_TEMP
                         WHERE ACCOUNT_IDENTIFIER = '{id_type}'
                         AND 
                         CUSTOMER_ID IN ({ids})
@@ -1907,19 +1911,23 @@ def get_tac_df_new(user, ids, id_type):
     if id_type == 'SAV ID':
         query_tac = f"""SELECT * FROM "CX_DB"."CX_CA_BR"."TAC_UNION"
         WHERE FLAG = 'SAV'
-        AND ID in ({ids})"""
+        AND ID in ({ids})
+        AND TO_DATE(INCDT_CREATION_DATE) > ADD_MONTHS(CURRENT_DATE(),-24)"""
     elif id_type == 'GU ID':
         query_tac = f"""SELECT * FROM "CX_DB"."CX_CA_BR"."TAC_UNION"
         WHERE FLAG = 'GU'
-        AND ID in ({ids})"""
+        AND ID in ({ids})
+        AND TO_DATE(INCDT_CREATION_DATE) > ADD_MONTHS(CURRENT_DATE(),-24)"""
     elif id_type == 'PARTY ID':
         query_tac = f"""SELECT * FROM "CX_DB"."CX_CA_BR"."TAC_UNION"
         WHERE FLAG = 'GU'
-        AND "PARTY ID" in ({ids})"""
+        AND "PARTY ID" in ({ids})
+        AND TO_DATE(INCDT_CREATION_DATE) > ADD_MONTHS(CURRENT_DATE(),-24)"""
     elif id_type == 'CAV ID':
         query_tac = f"""SELECT * FROM "CX_DB"."CX_CA_BR"."TAC_UNION"
         WHERE FLAG = 'CAV'
-        AND ID in ({ids})"""
+        AND ID in ({ids})
+        AND TO_DATE(INCDT_CREATION_DATE) > ADD_MONTHS(CURRENT_DATE(),-24)"""
 
     cs.execute(query_tac)
     df = cs.fetchall()
@@ -1979,6 +1987,112 @@ def get_tac_df_new(user, ids, id_type):
 
     return tac_df
 
+def get_EA_details_data_(user, ids, id_type):
+
+    """Get Coverage data from Snowflake by given Identifier type
+
+    param: user - cisco e-mail address
+    param: sav_ids - list of given sav ids"""
+
+    if ids == '':
+        ids = 0
+
+    cnn = snowflake.connector.connect(
+        user=user,
+        authenticator='externalbrowser',
+        role='CX_CA_BUS_ANALYST_ROLE',
+        warehouse='CX_CA_RPT_WH',
+        database='CX_DB',
+        schema='CX_CA_BR',
+        account='cisco.us-east-1'
+    )
+
+    cs = cnn.cursor()
+
+    query_EA_details = f"""SELECT CUSTOMER_ID AS "ACCOUNT ID",
+                        CUSTOMER_NAME AS "ACCOUNT NAME",
+                        BK_BUSINESS_ENTITY_NAME AS "ARCHITECTURE",
+                        BK_SUB_BUSINESS_ENTITY_NAME AS "SUB ARCHITECTURE",
+                        BK_PRODUCT_ID AS "PRODUCT ID",
+                        PRODUCT_FAMILY_ID AS "PRODUCT FAMILY",
+                        DV_GOODS_PRODUCT_CATEGORY_CD AS "PRODUCT CATEGORY",
+                        SUM(SSPT_PRICE) AS "SSPT LIST PRICE",
+                        SUM(QUANTITY) AS "ITEM QTY",
+                        SUM(LIST_PRICE) AS LIST_PRICE,
+                        ACCT_IDENTIFIER AS "ACCOUNT IDENTIFIER"
+
+                        FROM "CX_DB"."CX_CA_BR"."BV_EA"
+                        WHERE
+                        CUSTOMER_ID in  ({ids})
+                        AND ACCT_IDENTIFIER='{id_type}'
+                        group by 1,2,3,4,5,6,7,11
+                 """
+
+    cs.execute(query_EA_details)
+    df = cs.fetchall()
+    cs.close()
+    cnn.close()
+    
+    
+    EA_details_columns = ['ACCOUNT ID','ACCOUNT NAME','ARCHITECTURE','SUB ARCHITECTURE','PRODUCT ID','PRODUCT FAMILY','PRODUCT CATEGORY','SSPT LIST PRICE','ITEM QTY','LIST_PRICE','ACCOUNT IDENTIFIER']  
+
+    EA_details_df = pd.DataFrame(df, columns=EA_details_columns)
+
+    return EA_details_df
+
+def get_EA_eligibility_data_(user, ids, id_type):
+
+    """Get Coverage data from Snowflake by given Identifier type
+
+    param: user - cisco e-mail address
+    param: sav_ids - list of given sav ids"""
+
+    if ids == '':
+        ids = 0
+
+    cnn = snowflake.connector.connect(
+        user=user,
+        authenticator='externalbrowser',
+        role='CX_CA_BUS_ANALYST_ROLE',
+        warehouse='CX_CA_RPT_WH',
+        database='CX_DB',
+        schema='CX_CA_BR',
+        account='cisco.us-east-1'
+    )
+
+    cs = cnn.cursor()
+
+    query_EA_eligibility = f"""
+                        SELECT CUSTOMER_ID AS "ACCOUNT ID",
+                        CUSTOMER_NAME AS "ACCOUNT NAME",
+                        BK_BUSINESS_ENTITY_NAME AS ARCHITECTURE,
+                        EXISTING_EA_CUST_ID_FLAG,
+                        EXISTING_EA_CUST_NAME_FLAG,
+                        EA_MIG_ELIG_CUST_ID_FLAG,
+                        EA_MIG_ELIG_CUST_NAME_FLAG,
+                        SUM(SSPT_PRICE) AS "SSPT LIST PRICE",
+                        SUM(QUANTITY) AS "ITEM QTY",
+                        ACCT_IDENTIFIER AS "ACCOUNT IDENTIFIER"
+                        FROM "CX_DB"."CX_CA_BR"."BV_EA"
+                        WHERE
+                        CUSTOMER_ID in ({ids})
+                        AND ACCT_IDENTIFIER = '{id_type}'
+                        GROUP BY 1,2,3,4,5,6,7,10
+
+
+                 """
+
+    cs.execute(query_EA_eligibility)
+    df = cs.fetchall()
+    cs.close()
+    cnn.close()
+    
+    
+    EA_eligibility_columns = ["ACCOUNT ID",'ACCOUNT NAME','ARCHITECTURE','EXISTING_EA_CUST_ID_FLAG','EXISTING_EA_CUST_NAME_FLAG','EA_MIG_ELIG_CUST_ID_FLAG','EA_MIG_ELIG_CUST_NAME_FLAG',"SSPT LIST PRICE","ITEM QTY",'ACCOUNT IDENTIFIER']  
+
+    EA_eligibility_df = pd.DataFrame(df, columns=EA_eligibility_columns)
+
+    return EA_eligibility_df
 
 def get_cav_names(user, ids):
     """Get CAV Names from CAV IDs
@@ -2755,9 +2869,7 @@ def SSPT_Oppty(IB):
 
         # SSPT contract filter
         merge = Uplift_Recommended_SL(merge)
-
-        
-        merge = merge[(merge['Uplift sspt'] - merge['Annualized Extended Contract Line List USD Amount'])>=0]
+        merge = merge[(merge['Uplift sspt'] - merge['Annualized Extended Contract Line List USD Amount'])>0]
 
         merge2 = merge
 
@@ -3013,9 +3125,9 @@ def estimated_list_price(ib):
 
 #Validation of lenght for calculated values
 
-def length_validation(number, length=8):
+def lenght_validation(number, lenght=8):
     try:
-        if number >= length:
+        if number >= lenght:
             return('Big value')
         else:
             return('Correct')
@@ -3039,72 +3151,68 @@ def smartsheet_len_info(df):
 def Uplift_Recommended_SL(df):
 
     ib_df = df.copy()
-    if len(ib_df)>0:
-        ib_df['Uplift sspt'] = pd.NaT
-        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSC2P','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'C2P' else x[3], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSC4P','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] in ['3C4P','C4P','C4S'] else x[3], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSCS','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'CS' else x[3], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSDR5','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'UCSD5' else x[3], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSDR7','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'UCSD7' else x[3], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSS2P','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'S2P' else x[3], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNE','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'SNTE' else x[3], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNP','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] in ['3SNTP','5SNTP'] else x[2], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNP','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] in ['SNTP'] else x[3], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] in ['3SNT','5SNT','SNT'] else x[2], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','SSSW','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] in ['SW'] else x[3], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['Contract Type','ECMUS','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] in ['ECMU'] else x[2], axis=1)
+    ib_df['Uplift sspt'] = pd.NaT
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSC2P','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'C2P' else x[3], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSC4P','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] in ['3C4P','C4P','C4S'] else x[3], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSCS','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'CS' else x[3], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSDR5','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'UCSD5' else x[3], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSDR7','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'UCSD7' else x[3], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSS2P','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'S2P' else x[3], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNE','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'SNTE' else x[3], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNP','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] in ['3SNTP','5SNTP'] else x[2], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNP','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] in ['SNTP'] else x[3], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] in ['3SNT','5SNT','SNT'] else x[2], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','SSSW','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] in ['SW'] else x[3], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','ECMUS','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] in ['ECMU'] else x[2], axis=1)
 
-        def cs_multiplier_sl(service_level, Sss2P, Ssc2P, Sssnp, Ssc4P, Sssne, Ssc4S, Sssnt, Sscs, Ssdr7, Ssdr5, Sssw):
-            if service_level == '24x7x2':
-                return Sss2P
-            elif service_level == '24x7x2OS': 
-                return Ssc2P
-            elif service_level == '24x7x4': 
-                return Sssnp
-            elif service_level == '24x7x4OS': 
-                return Ssc4P
-            elif service_level == '8x5x4': 
-                return Sssne
-            elif service_level == '8x5x4OS': 
-                return Ssc4S
-            elif service_level == 'NBD': 
-                return Sssnt
-            elif service_level == '8x5xNDBOS': 
-                return Sscs
-            elif service_level == 'DR 24x7x4OS': 
-                return Ssdr7
-            elif service_level == 'DR 8x5xNDBOS': 
-                return Ssdr5
-            elif service_level == 'SNTC NO RMA': 
-                return Sssw
-            else: 
-                return 0
+    def cs_multiplier_sl(service_level, Sss2P, Ssc2P, Sssnp, Ssc4P, Sssne, Ssc4S, Sssnt, Sscs, Ssdr7, Ssdr5, Sssw):
+        if service_level == '24x7x2':
+            return Sss2P
+        elif service_level == '24x7x2OS': 
+            return Ssc2P
+        elif service_level == '24x7x4': 
+            return Sssnp
+        elif service_level == '24x7x4OS': 
+            return Ssc4P
+        elif service_level == '8x5x4': 
+            return Sssne
+        elif service_level == '8x5x4OS': 
+            return Ssc4S
+        elif service_level == 'NBD': 
+            return Sssnt
+        elif service_level == '8x5xNDBOS': 
+            return Sscs
+        elif service_level == 'DR 24x7x4OS': 
+            return Ssdr7
+        elif service_level == 'DR 8x5xNDBOS': 
+            return Ssdr5
+        elif service_level == 'SNTC NO RMA': 
+            return Sssw
+        else: 
+            return 0
 
-        ib_df['cs multiplier sl'] = ib_df[['Service Level', 'SSS2P', 'SSC2P', 'SSSNP', 'SSC4P', 'SSSNE', 'SSC4S', 'SSSNT', 'SSCS', 'SSDR7', 'SSDR5', 'SSSW']].apply(lambda x: cs_multiplier_sl(x[0],x[1],x[2],x[3],x[4],x[5],x[6],x[7],x[8],x[9],x[10],x[11]), axis=1)
-        ib_df['CS SSPT (Multiplier)'] = ib_df[['Uplift','cs multiplier sl','Multiplier']].apply(lambda x: x[1]*x[2] if pd.notna(x[0]) else 0, axis=1)
+    ib_df['cs multiplier sl'] = ib_df[['Service Level', 'SSS2P', 'SSC2P', 'SSSNP', 'SSC4P', 'SSSNE', 'SSC4S', 'SSSNT', 'SSCS', 'SSDR7', 'SSDR5', 'SSSW']].apply(lambda x: cs_multiplier_sl(x[0],x[1],x[2],x[3],x[4],x[5],x[6],x[7],x[8],x[9],x[10],x[11]), axis=1)
+    ib_df['CS SSPT (Multiplier)'] = ib_df[['Uplift','cs multiplier sl','Multiplier']].apply(lambda x: x[1]*x[2] if pd.notna(x[0]) else 0, axis=1)
 
-        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','CS SSPT (Multiplier)','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] in ['Combined Services'] else x[2], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['SP Base'] and x[1] in ['SPAR1'] else x[3], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNE','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPAR2'] else x[4], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNP','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPAR3'] else x[4], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSS2P','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPAR4'] else x[4], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSC2P','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPC2P'] else x[4], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSC4P','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['SP Base'] and x[1] in ['SPC4P'] else x[3], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['SP Base'] and x[1] in ['SBAR1'] else x[3], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSCS','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPCS'] else x[4], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['TELEPRESENCE CUSTOMERS'] and x[1] in ['ECDN'] else x[3], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSCS','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['TELEPRESENCE CUSTOMERS'] and x[1] in ['ECDO'] else x[3], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNC','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'SNC' else x[2], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSNCO','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'SNCO' else x[3], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNP','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'PSUP' else x[3], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'PSRT' else x[2], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'PSUT' else x[2], axis=1)
-        ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'LSNT' else x[2], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','CS SSPT (Multiplier)','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] in ['Combined Services'] else x[2], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['SP Base'] and x[1] in ['SPAR1'] else x[3], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNE','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPAR2'] else x[4], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNP','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPAR3'] else x[4], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSS2P','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPAR4'] else x[4], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSC2P','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPC2P'] else x[4], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSC4P','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['SP Base'] and x[1] in ['SPC4P'] else x[3], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['SP Base'] and x[1] in ['SBAR1'] else x[3], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSCS','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else x[3]) if x[0] in ['SP Base'] and x[1] in ['SPCS'] else x[4], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['TELEPRESENCE CUSTOMERS'] and x[1] in ['ECDN'] else x[3], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['SNTC SSPT Offer Flag','Contract Type','SSCS','Uplift sspt']].apply(lambda x: (x[2] if pd.notna(x[2]) else 0) if x[0] in ['TELEPRESENCE CUSTOMERS'] and x[1] in ['ECDO'] else x[3], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNC','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'SNC' else x[2], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSNCO','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'SNCO' else x[3], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNP','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else x[2]) if x[0] == 'PSUP' else x[3], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'PSRT' else x[2], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'PSUT' else x[2], axis=1)
+    ib_df['Uplift sspt'] = ib_df[['Contract Type','SSSNT','Uplift sspt']].apply(lambda x: (x[1] if pd.notna(x[1]) else 0) if x[0] == 'LSNT' else x[2], axis=1)
 
-        ib_df['Uplift sspt'] = ib_df['Uplift sspt'].fillna(0)
-        ib_df.drop(columns=['cs multiplier sl','CS SSPT (Multiplier)'], axis=1, inplace=True)
-        #(ib_df['Uplift sspt'] * ib_df['Item Quantity']).sum()
-        return ib_df
-    else: 
-        ib_df['Uplift sspt'] = 0
-        return ib_df
+    ib_df['Uplift sspt'] = ib_df['Uplift sspt'].fillna(0)
+    ib_df.drop(columns=['cs multiplier sl','CS SSPT (Multiplier)'], axis=1, inplace=True)
+    #(ib_df['Uplift sspt'] * ib_df['Item Quantity']).sum()
+    return ib_df
