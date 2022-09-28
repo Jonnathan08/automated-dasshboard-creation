@@ -519,9 +519,7 @@ def get_ib_data(user, ids, id_type):
     cs.close()
     cnn.close()
     
-    ib_df = pd.DataFrame(df)
-
-    ib_df.columns = ['customer_id', 
+    ib_df_columns = ['customer_id', 
                     'customer_name',
                     'Best Site Sales Level 2 Name', 
                     'Coverage', 
@@ -642,6 +640,10 @@ def get_ib_data(user, ids, id_type):
                     'ADJUSTED_CATEGORY',
                     'Service BE GEO Name',]
 
+    
+    ib_df = pd.DataFrame(df, columns=ib_df_columns)
+
+    
     ib_df[['L12HR','L12OS',
                 'L14HR',
                 'L14OS',
@@ -990,6 +992,7 @@ def get_dna_df(user, savs, gus, parties, cavs):
                         BK_PRODUCT_ID --K2_PRODUCT_CATEGORY_NM AS PRODUCT
                     FROM
                         CX_DB.CX_CA_EBV.BV_CX_SOLUTION_HIERARCHY CX_SOL
+                       where LEVEL1_SOL_NAME='Campus Network'
                     GROUP BY
                         1,
                         2,

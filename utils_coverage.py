@@ -355,6 +355,7 @@ def get_tac_data(user,ids_sav,ids_gu,ids_cr,ids_cav):
                    'Data Extracted Date', 'RU_BK_PRODUCT_FAMILY_ID']
 
             df = pd.DataFrame(df,columns=tac_columns)
+            print('Creado')
             dfs.append(df)
 
     tac_df = pd.concat(dfs)
@@ -614,6 +615,7 @@ def create_extract(name,columns,df,path):
             # (https://help.tableau.com/current/api/hyper_api/en-us/reference/sql/connectionsettings.html).
         connection_parameters = {"lc_time": "en_US"}
 
+        
             # Creates new Hyper file "customer.hyper".
             # Replaces file with CreateMode.CREATE_AND_REPLACE if it already exists.
         with Connection(hyper.endpoint,
@@ -621,7 +623,7 @@ def create_extract(name,columns,df,path):
                         create_mode=CreateMode.CREATE_AND_REPLACE) as connection:
 
             connection.catalog.create_schema('Extract')
-
+            
 
             table = TableDefinition(
                 # Since the table name is not prefixed with an explicit schema name, the table will reside in the default "public" namespace.
@@ -630,10 +632,13 @@ def create_extract(name,columns,df,path):
             )
 
             connection.catalog.create_table(table)
+            
 
             with Inserter(connection, table) as inserter:
                 for index, row in df.iterrows():
+                    row.replace('',0.0)
                     inserter.add_row(row)
+                                    
                 inserter.execute()
                 
                 
