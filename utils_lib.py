@@ -992,6 +992,7 @@ def get_dna_df(user, savs, gus, parties, cavs):
                         BK_PRODUCT_ID --K2_PRODUCT_CATEGORY_NM AS PRODUCT
                     FROM
                         CX_DB.CX_CA_EBV.BV_CX_SOLUTION_HIERARCHY CX_SOL
+                       where LEVEL1_SOL_NAME='Campus Network'
                     GROUP BY
                         1,
                         2,
