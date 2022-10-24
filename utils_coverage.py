@@ -20,13 +20,39 @@ from tableauhyperapi import HyperProcess, Telemetry, \
 
 warnings.filterwarnings("ignore")
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    
 def clean_region(region):
     region = region.replace('_','')
     region = region.split('-')
     
     return region[0]
 
-
+def connec_to_sf(user):
+    try:
+        cnn = snowflake.connector.connect(
+            user=user,
+            authenticator='externalbrowser',
+            role='CX_CA_BUS_ANALYST_ROLE',
+            warehouse='CX_CA_RPT_WH',
+            database='CX_DB',
+            schema='CX_CA_BR',
+            account='cisco.us-east-1'
+        )
+        cs = cnn.cursor()
+        return cs,cnn
+    except: 
+        print(bcolors.FAIL + bcolors.BOLD + 'Error connecting to Snowflake: ' + bcolors.ENDC + "Check your credentials and VPN connection\n")
+        raise
 
 def get_da_requests(da,df):
     oa_df = df.query("`Cov Assigned DA` == r'{}' and `Cov Status` == 'In Process'".format(da),
@@ -127,24 +153,15 @@ def get_uncovered_data(user,ids_sav,ids_gu,ids_cr,ids_cav):
     
     return uncovered_df
 
-def get_uncovered_data2(user,ids_sav,ids_gu,ids_cr,ids_cav):
+def get_uncovered_data2(user,cs,ids_sav,ids_gu,ids_cr,ids_cav):
     
     """Get uncovered data from IDs
     
     param: user - cisco e-mail address
     param: ids - list of given account ids"""
-     
-    cnn = snowflake.connector.connect(
-    user=user,
-    authenticator='externalbrowser',
-    role='CX_CA_BUS_ANALYST_ROLE',
-    warehouse='CX_CA_RPT_WH',
-    database='CX_DB',
-    schema='CX_CA_BR',
-    account='cisco.us-east-1'
-    )
-    
-    cs = cnn.cursor()
+
+    if cs.is_closed():
+        cnn,cs = connec_to_sf(user)
     
     dfs = []
     types_list = {'SAV':ids_sav,'GU':ids_gu,'CR':ids_cr,'CAV':ids_cav}
@@ -189,24 +206,16 @@ def get_uncovered_data2(user,ids_sav,ids_gu,ids_cr,ids_cav):
     return uncovered_df
 
 
-def get_coverage_data(user,ids_sav,ids_gu,ids_cr,ids_cav):
+def get_coverage_data(user,cs,ids_sav,ids_gu,ids_cr,ids_cav):
     
     """Get coverage data from IDs
     
     param: user - cisco e-mail address
     param: ids - list of given account ids"""
      
-    cnn = snowflake.connector.connect(
-    user=user,
-    authenticator='externalbrowser',
-    role='CX_CA_BUS_ANALYST_ROLE',
-    warehouse='CX_CA_RPT_WH',
-    database='CX_DB',
-    schema='CX_CA_BR',
-    account='cisco.us-east-1'
-    )
-    
-    cs = cnn.cursor()
+    if cs.is_closed():
+        cnn,cs = connec_to_sf(user)
+
     
     dfs = []
     types_list = {'SAV':ids_sav,'GU':ids_gu,'CR':ids_cr,'CAV':ids_cav}
@@ -237,24 +246,17 @@ def get_coverage_data(user,ids_sav,ids_gu,ids_cr,ids_cav):
     
     return coverage_df
 
-def get_contracts_data(user,ids_sav,ids_gu,ids_cr,ids_cav):
+def get_contracts_data(user,cs,ids_sav,ids_gu,ids_cr,ids_cav):
     
     """Get contracts data from IDs
     
     param: user - cisco e-mail address
     param: ids - list of given account ids"""
     
-    cnn = snowflake.connector.connect(
-    user=user,
-    authenticator='externalbrowser',
-    role='CX_CA_BUS_ANALYST_ROLE',
-    warehouse='CX_CA_RPT_WH',
-    database='CX_DB',
-    schema='CX_CA_BR',
-    account='cisco.us-east-1'
-    )
+    if cs.is_closed():
+        cnn,cs = connec_to_sf(user)
     
-    cs = cnn.cursor()
+
     
     dfs = []
     types_list = {'SAV':ids_sav,'GU':ids_gu,'CR':ids_cr,'CAV':ids_cav}
@@ -285,7 +287,7 @@ def get_contracts_data(user,ids_sav,ids_gu,ids_cr,ids_cav):
     return contracts_df
 
 
-def get_tac_data(user,ids_sav,ids_gu,ids_cr,ids_cav): 
+def get_tac_data(user,cs,ids_sav,ids_gu,ids_cr,ids_cav): 
     
     """Get TAC data from Snowflake by given IDs and
     creates a DataFrame
@@ -293,17 +295,9 @@ def get_tac_data(user,ids_sav,ids_gu,ids_cr,ids_cav):
     param: user - cisco e-mail address
     param: ids"""
     
-    cnn = snowflake.connector.connect(
-    user=user,
-    authenticator='externalbrowser',
-    role='CX_CA_BUS_ANALYST_ROLE',
-    warehouse='CX_CA_RPT_WH',
-    database='CX_DB',
-    schema='CX_CA_BR',
-    account='cisco.us-east-1'
-    )
+    if cs.is_closed():
+        cnn,cs = connec_to_sf(user)
     
-    cs = cnn.cursor()
     
     dfs = []
     types_list = {'SAV':ids_sav,'GU':ids_gu,'CR':ids_cr,'CAV':ids_cav}
@@ -412,24 +406,16 @@ def get_tac_data(user,ids_sav,ids_gu,ids_cr,ids_cav):
 
 
 
-def get_appliance_data(user,ids_sav,ids_gu,ids_cr,ids_cav):
+def get_appliance_data(user,cs,ids_sav,ids_gu,ids_cr,ids_cav):
     
     """Get appliance details data from IDs
     
     param: user - cisco e-mail address
     param: ids - list of given account ids"""
      
-    cnn = snowflake.connector.connect(
-    user=user,
-    authenticator='externalbrowser',
-    role='CX_CA_BUS_ANALYST_ROLE',
-    warehouse='CX_CA_RPT_WH',
-    database='CX_DB',
-    schema='CX_CA_BR',
-    account='cisco.us-east-1'
-    )
+    if cs.is_closed():
+        cnn,cs = connec_to_sf(user)
     
-    cs = cnn.cursor()
     
     dfs = []
     types_list = {'SAV':ids_sav,'GU':ids_gu,'CR':ids_cr,'CAV':ids_cav}
