@@ -4,7 +4,22 @@ import random
 import datetime
 import numpy as np  
 
-import smartsheet
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+try:
+    import smartsheet
+except AttributeError as e:
+    print(bcolors.FAIL + bcolors.BOLD + 'Error importing Smartsheet lib: ' + bcolors.ENDC + "Try to change the python version, Eg. 'Python 3.8.8'\n")
+    raise
 
 def init_conn(token):
     SMARTSHEET_ACCESS_TOKEN = token #"Jfm6LbqQyQoC63oFfzEN0cTiuHJKh0lUwXilp"
