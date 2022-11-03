@@ -3194,6 +3194,7 @@ def get_smartsheet_IDs(user):
 
 
 def get_OE_pending_requests(user,cs):
+    
     """
     Get OE pending accounts data from Snowflake with creation date mayor to '2021-08-01', 
     OP-URL Null, STATUS IN ('Validated', 'QA Approved', 'Review required') AND CAMPAIGN NOT IN ('SAVM'),
@@ -3633,7 +3634,7 @@ def upload_to_compass_tracker(op_tracker):
 
 def upload_data_to_backup(user, table_name, backup_table_name, name):
 
-    cs=connec_to_sf(user)
+    cs,cnn=connec_to_sf(user)
     
     query_backup = f"""INSERT INTO CX_DB.CX_CA_BR.{backup_table_name}
                         SELECT * FROM CX_DB.CX_CA_BR.{table_name}
