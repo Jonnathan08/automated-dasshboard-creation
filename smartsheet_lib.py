@@ -118,7 +118,7 @@ def get_last_n_rows(sheet,n_rows=100):
 def assign_da_list(df,da_counts):
     """Assign DA to request"""
     
-    DA2 = ['saescoba@cisco.com', 'malondon@cisco.com', 'camruiz@cisco.com', 'josbirch@cisco.com', 'josguti2@cisco.com', 'stotero@cisco.com']
+    DA2 = ['abc@email.com']
 
     das = []
 
@@ -129,11 +129,11 @@ def assign_da_list(df,da_counts):
         for da in DA2:
             
             if (df['Lvl2 (Region)'][i] == 'US PS Market Segment'): # USPS DA restriction
-                if da_counts.get('josbirch@cisco.com',0) <= max_n:
-                    das.append('josbirch@cisco.com')
-                    da_counts['josbirch@cisco.com'] = da_counts.get('josbirch@cisco.com',0) + 1
+                if da_counts.get('abc@email.com',0) <= max_n:
+                    das.append('abc@email.com')
+                    da_counts['abc@email.com'] = da_counts.get('abc@email.com',0) + 1
                     break
-                elif da_counts.get('josbirch@cisco.com',0) > max_n:
+                elif da_counts.get('abc@email.com',0) > max_n:
                     das.append('')
                     break
             else:
